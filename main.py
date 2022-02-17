@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from controller.common_controller import common_router
 from common.err import HTTPException
-# from middleware.initMiddlewares import InitMiddleware
+from middleware.init_middleware import InitMiddleware
 
 from configs import AppConfig
 
@@ -26,7 +26,7 @@ app.add_middleware(
 )
 
 # app.add_middleware(JWTMiddleware)
-# app.add_middleware(InitMiddleware)
+app.add_middleware(InitMiddleware)
 
 
 # @app.middleware('http')

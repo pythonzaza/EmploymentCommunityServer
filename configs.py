@@ -32,15 +32,14 @@ class BaseConfig(object):
 
 
 async_engine = create_async_engine(BaseConfig.DATABASE_URL, echo=False, future=True)
-# engine = create_engine(BaseConfig.DATABASE_URL, echo=True, future=True)
 
-REDIS_CONFIG = {
+
+class RedisConfig:
     # "address": "redis://49.232.14.115:6379",
-    "address": "redis://127.0.0.1:6379",
+    host = "redis://127.0.0.1:6379"
     # "password": "",
-    "encoding": "utf-8",
-    "timeout": 1,
-}
+    encoding = "utf-8"
+    timeout = 1
 
 
 class AppConfig(object):
