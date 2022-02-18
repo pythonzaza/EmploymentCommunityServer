@@ -31,13 +31,9 @@ app.add_middleware(InitMiddleware)
 
 # @app.middleware('http')
 # async def get_db(request: Request, call_next, ):
-#     request.state.db = next(BaseDB.get_db())
-#     request.state.redis = await (RedisDB.get_async_redis_())
-#
 #     res = await call_next(request)
-#
-#     request.state.redis.close()
 #     return res
+
 
 # 注入全局异常类
 @app.exception_handler(HTTPException)

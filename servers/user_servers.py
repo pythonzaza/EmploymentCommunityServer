@@ -7,6 +7,7 @@ from datetime import datetime
 from configs import EncryptConfig
 from common.err import HTTPException, ErrEnum
 from common.encrypt import Encrypt
+from common.jwt import get_token_key
 from common.logger import logger
 from schema_models.user_models import UserRegisterIn
 from schema_models.common_models import TokenData
@@ -72,8 +73,8 @@ class User(object):
         }
         token_data = TokenData(**token_data)
         token = await Encrypt.create_token(token_data)
-        token_key = self.get_token_key(user.id, platform)
-        result = await self.redis.set(token_key, token, ex=EncryptConfig.ACCESS_TOKEN_EXPIRE_MINUTES * 2 * 60)
+        token_key = await get_token_key(user.id, platform)
+        result = await self.redis.set(token_key, token, ex=EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS * 2)
         if result:
             user.token = token
             return

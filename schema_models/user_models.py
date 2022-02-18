@@ -24,7 +24,7 @@ class UserRegisterIn(BaseModel):
         exclude = {"code", "invite_code"}
 
 
-class _UserRegisterOut(BaseModel):
+class UserRegisterOutData(BaseModel):
     name: str = Field(..., description="用户名", )
     account: str = Field(..., description="登录账号", )
     token: str = Field(..., description="token")
@@ -34,4 +34,4 @@ class _UserRegisterOut(BaseModel):
 
 
 class UserRegisterOut(RespModel):
-    data: _UserRegisterOut
+    data: UserRegisterOutData

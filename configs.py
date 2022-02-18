@@ -10,11 +10,10 @@ class EncryptConfig(object):
     配置加密密钥
     key应为8-24位
     """
-    password_key: str = '!@#$%^~~!qwg'
-    token_key: str = '!@#$%^~~&'
+    PASSWORD_KEY: str = '!@#$%^~~!qwg'
     SECRET_KEY = "09d25e094f5wes52556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
     ALGORITHM = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES = 10080
+    ACCESS_TOKEN_EXPIRE_SECONDS = 10080 * 60
 
 
 class BaseConfig(object):

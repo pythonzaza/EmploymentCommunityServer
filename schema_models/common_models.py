@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from datetime import datetime
 
 
 class TokenData(BaseModel):
@@ -6,4 +7,4 @@ class TokenData(BaseModel):
     account: str = Field(..., description="用户账号")
     # token: str = Field(..., description="根token")
     platform: str = Field(..., description="登录平台")
-    exp: int = Field(0, description="初始过期时间")
+    exp: datetime = Field(0, description="初始过期时间")

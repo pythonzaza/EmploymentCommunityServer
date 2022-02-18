@@ -26,6 +26,7 @@ class ErrEnum:
         DB_ERR = 10002  # 数据库异常
         REDIS_ERR = 10003  # Redis异常
         PARAMS_ERR = 10004  # 参数异常
+        TOKEN_ERR = 10005  # token异常
 
     class User(IntEnum):
         USER_REPEAT = 20001  # 用户已存在

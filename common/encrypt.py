@@ -17,7 +17,7 @@ class Encrypt(object):
         :return:
         """
         sha256 = hashlib.sha256()
-        sha256.update((password + EncryptConfig.password_key).encode())
+        sha256.update((password + EncryptConfig.PASSWORD_KEY).encode())
         return sha256.hexdigest()
 
     async def verify_password(self, password: str, hash_password: str) -> bool:
@@ -32,11 +32,11 @@ class Encrypt(object):
 
     @staticmethod
     async def create_token(token_data: TokenData,
-                           expires_delta: int = EncryptConfig.ACCESS_TOKEN_EXPIRE_MINUTES):
+                           expires_delta: int = EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS) -> str:
         """
         创建token
         """
-        expire = datetime.utcnow() + timedelta(minutes=expires_delta)
+        expire = datetime.utcnow() + timedelta(seconds=expires_delta)
         token_data.exp = expire
         to_encode = token_data.dict()
 
@@ -44,7 +44,7 @@ class Encrypt(object):
         return encoded_jwt
 
     @staticmethod
-    async def parse_token(token: str):
+    async def parse_token(token: str) -> TokenData:
         try:
             user = jwt.decode(token, EncryptConfig.SECRET_KEY, algorithms=[EncryptConfig.ALGORITHM],
                               options={"require_exp": False})
@@ -53,6 +53,3 @@ class Encrypt(object):
             return TokenData(**user)
         except JWTError:
             raise HTTPException(message="token解码异常", status=20001)
-
-    async def verify_token(self):
-        pass

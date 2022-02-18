@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 
-from schema_models.user_models import UserRegisterIn, UserRegisterOut, _UserRegisterOut
+from schema_models.user_models import UserRegisterIn, UserRegisterOut, UserRegisterOutData
 from servers.user_servers import User
 
 common_router = APIRouter()
@@ -21,4 +21,4 @@ async def register(request: Request, new_user: UserRegisterIn):
     new_user = await user.register(new_user)
     await user.creat_token(new_user)
 
-    return UserRegisterOut(data=_UserRegisterOut.from_orm(new_user))
+    return UserRegisterOut(data=UserRegisterOutData.from_orm(new_user))
