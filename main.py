@@ -11,7 +11,7 @@ from middleware.init_middleware import InitMiddleware
 
 from configs import AppConfig
 
-app = FastAPI()
+app = FastAPI(title='EmploymentCommunity-就业社区')
 
 # swagger身份验证器
 OAuth2 = HTTPBearer()
