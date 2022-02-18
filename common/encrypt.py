@@ -49,10 +49,10 @@ class Encrypt(object):
             user = jwt.decode(token, EncryptConfig.SECRET_KEY, algorithms=[EncryptConfig.ALGORITHM],
                               options={"require_exp": False})
             if not isinstance(user, dict):
-                raise HTTPException("token_data格式异常")
+                raise HTTPException(message="token_data格式异常", status=20000)
             return TokenData(**user)
         except JWTError:
-            raise HTTPException("token解码异常")
+            raise HTTPException(message="token解码异常", status=20001)
 
     async def verify_token(self):
         pass
