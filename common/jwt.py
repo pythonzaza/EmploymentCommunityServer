@@ -37,8 +37,7 @@ async def verify_token(request: Request) -> TokenData:
     if not server_token:
         raise HTTPException(status=ErrEnum.Common.TOKEN_ERR, message="Token异常")
 
-    now = datetime.now()
-    if token_data.exp < now:
+    if token_data.exp < datetime.now():
         key_ttl = await redis_db.ttl(token_key)
         if key_ttl < EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS:
             await redis_db.set(name=token_key, value=token, ex=EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS)
