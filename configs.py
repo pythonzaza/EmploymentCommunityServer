@@ -26,12 +26,12 @@ class BaseConfig(object):
     USER = 'www'
     PASSWORD = '-xFn9y2mK,dgfVVQ5#'
     PORT = '3306'
-    DATABASE = 'myTestBase'
+    DATABASE = 'EmploymentCommunity'
 
-    DATABASE_URL = f"mysql+aiomysql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=utf8"
+    DATABASE_URL = f"mysql+aiomysql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=UTF8MB4"
 
 
-async_engine = create_async_engine(BaseConfig.DATABASE_URL, echo=False, future=True)
+async_engine = create_async_engine(BaseConfig.DATABASE_URL, echo=True, future=True)
 
 
 class RedisConfig:
