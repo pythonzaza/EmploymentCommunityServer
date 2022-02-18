@@ -5,7 +5,7 @@ from sqlalchemy import select, insert, or_
 from datetime import datetime
 
 from configs import EncryptConfig
-from common.err import HTTPException
+from common.err import HTTPException, ErrEnum
 from common.encrypt import Encrypt
 from common.logger import logger
 from schema_models.user_models import UserRegisterIn
@@ -31,7 +31,7 @@ class User(object):
         async with self.db.begin():
             old_user = await self.get_user_by_user_name(user)
             if old_user:
-                raise HTTPException(status=10001, message="账户已存在", data="账户已存在")
+                raise HTTPException(status=ErrEnum.User.USER_REPEAT, message="账户已存在", data="账户已存在")
 
             try:
                 user.password = await Encrypt.encrypt_password(user.password)
@@ -57,7 +57,7 @@ class User(object):
 
             except Exception as err:
                 logger.error(err)
-                raise HTTPException(status=100002, message="系统异常", data=err)
+                raise HTTPException(status=ErrEnum.Common.NETWORK_ERR, message="系统异常", data=err)
 
     @staticmethod
     def get_token_key(user_id, platform):
@@ -78,4 +78,4 @@ class User(object):
             user.token = token
             return
         else:
-            raise HTTPException(message='Redis写入失败', status=10003)
+            raise HTTPException(message='Redis写入失败', status=ErrEnum.Common.REDIS_ERR)

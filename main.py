@@ -6,7 +6,7 @@ from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 
 from controller.common_controller import common_router
-from common.err import HTTPException
+from common.err import HTTPException, ErrEnum
 from middleware.init_middleware import InitMiddleware
 
 from configs import AppConfig
@@ -68,7 +68,7 @@ async def validation_exception_handler(request, exc):
     return JSONResponse(
         content={
             "message": '数据格式异常',
-            "status": 422,
+            "status": ErrEnum.Common.PARAMS_ERR,
             "data": message,
         },
     )
