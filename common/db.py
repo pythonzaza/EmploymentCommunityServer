@@ -1,11 +1,14 @@
 from aioredis import Redis, from_url
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
+# from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import sessionmaker, registry
 
 from configs import async_engine, RedisConfig
 
-Base = declarative_base()
+mapper_registry = registry()
+Base = mapper_registry.generate_base()
+# Base = declarative_base()
+
 
 async_db_session = sessionmaker(async_engine, expire_on_commit=False, class_=AsyncSession)
 
