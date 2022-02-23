@@ -1,7 +1,9 @@
 from fastapi import Request
 from aioredis import Redis
+from sqlalchemy.future import Select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert, or_
+from sqlalchemy.engine.result import Result, ChunkedIteratorResult
+from sqlalchemy import select, insert, or_, and_
 from datetime import datetime
 
 from configs import EncryptConfig
@@ -9,7 +11,7 @@ from common.err import HTTPException, ErrEnum
 from common.encrypt import Encrypt
 from common.jwt import get_token_key
 from common.logger import logger
-from schema_models.user_models import UserRegisterIn
+from schema_models.user_models import UserRegisterIn, UserLoginIn
 from schema_models.common_models import TokenData
 from models.user_models import UserModel
 
@@ -20,7 +22,7 @@ class User(object):
         self.db: AsyncSession = request.state.db
         self.redis: Redis = request.state.redis
 
-    async def get_user_by_user_name(self, user: UserRegisterIn):
+    async def get_user_by_user_name(self, user: UserRegisterIn) -> UserModel.id:
         stmt = select([UserModel.id]).where(or_(UserModel.account == user.account, UserModel.email == user.email))
 
         result = await self.db.execute(stmt)
@@ -60,23 +62,39 @@ class User(object):
                 logger.error(err)
                 raise HTTPException(status=ErrEnum.Common.NETWORK_ERR, message="系统异常", data=err)
 
-    @staticmethod
-    def get_token_key(user_id, platform):
-        return f"user:token:{platform}:userId{user_id}"
-
-    async def creat_token(self, user: UserModel, platform: str = "web"):
+    async def create_token(self, user: UserModel, platform: str = "web") -> str:
         token_data = {
             "user_id": user.id,
             "account": user.account,
-            # "token": user.token,
+            "ip": self.request.client.host,
             "platform": platform,
         }
         token_data = TokenData(**token_data)
-        token = await Encrypt.create_token(token_data)
+        token = await Encrypt.create_token(token_data, token=user.token)
         token_key = await get_token_key(user.id, platform)
         result = await self.redis.set(token_key, token, ex=EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS * 2)
         if result:
-            user.token = token
-            return
+            # user.token = token
+            return token
         else:
             raise HTTPException(message='Redis写入失败', status=ErrEnum.Common.REDIS_ERR)
+
+    async def _find_user(self, user: UserLoginIn) -> UserModel:
+
+        stmt: Select = select(UserModel).where(
+            or_(UserModel.account == user.account, UserModel.email == user.email),
+            UserModel.password == user.password)
+        result: ChunkedIteratorResult = await self.db.execute(stmt)
+        user = result.scalars().first()
+
+        if not user:
+            raise HTTPException(status=ErrEnum.User.ACCOUNT_OR_PWD_ERR, message="账号或密码错误")
+        return user
+
+    async def login(self, login_user: UserLoginIn):
+        login_user.password = await Encrypt.encrypt_password(login_user.password)
+        async with self.db.begin():
+            if user := await self._find_user(login_user):
+                new_token = await self.create_token(user=user)
+        user.token = new_token
+        return user

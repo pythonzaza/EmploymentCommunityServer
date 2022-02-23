@@ -7,4 +7,5 @@ class TokenData(BaseModel):
     account: str = Field(..., description="用户账号")
     # token: str = Field(..., description="根token")
     platform: str = Field(..., description="登录平台")
+    ip: str = Field(..., description="登录ip")
     exp: datetime = Field(0, description="初始过期时间")

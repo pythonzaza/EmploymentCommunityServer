@@ -32,7 +32,8 @@ class Encrypt(object):
 
     @staticmethod
     async def create_token(token_data: TokenData,
-                           expires_delta: int = EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS) -> str:
+                           *, expires_delta: int = EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS,
+                           token: str = "") -> str:
         """
         创建token
         """
@@ -40,7 +41,7 @@ class Encrypt(object):
         token_data.exp = expire
         to_encode = token_data.dict()
 
-        encoded_jwt = jwt.encode(to_encode, EncryptConfig.SECRET_KEY, algorithm=EncryptConfig.ALGORITHM)
+        encoded_jwt = jwt.encode(to_encode, EncryptConfig.SECRET_KEY + token, algorithm=EncryptConfig.ALGORITHM)
         return encoded_jwt
 
     @staticmethod
