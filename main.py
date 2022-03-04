@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from controller.common_controller import common_router
 from common.err import HTTPException, ErrEnum
 from middleware.init_middleware import InitMiddleware
+from middleware.throttle_middleware import ThrottleMiddleware
 
 from configs import AppConfig
 
@@ -25,8 +26,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# app.add_middleware(JWTMiddleware)
 app.add_middleware(InitMiddleware)
+app.add_middleware(ThrottleMiddleware)
 
 
 # @app.middleware('http')
