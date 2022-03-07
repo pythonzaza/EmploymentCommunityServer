@@ -54,3 +54,9 @@ class Encrypt(object):
             return TokenData(**user)
         except JWTError:
             raise HTTPException(message="token解码异常", status=20001)
+
+    @staticmethod
+    async def md5(text: str):
+        md5 = hashlib.md5()
+        md5.update(text.encode())
+        return md5.hexdigest()

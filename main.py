@@ -26,8 +26,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(InitMiddleware)
 app.add_middleware(ThrottleMiddleware)
+app.add_middleware(InitMiddleware)
 
 
 # @app.middleware('http')
