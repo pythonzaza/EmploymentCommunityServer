@@ -1,10 +1,8 @@
 
 from sqlalchemy.future import Select
-from sqlalchemy.engine.result import Result, ChunkedIteratorResult
+from sqlalchemy.engine.result import ChunkedIteratorResult
 from sqlalchemy import select, insert, or_, and_
 from datetime import datetime
-
-from starlette.requests import Request
 
 from configs import EncryptConfig
 from common.err import HTTPException, ErrEnum
