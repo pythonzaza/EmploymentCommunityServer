@@ -11,19 +11,18 @@ class EncryptConfig(object):
     key应为8-24位
     """
     PASSWORD_KEY: str = '!@#$%^~~!qwg'
-    SECRET_KEY = "09d25e094f5wes52556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+    SECRET_KEY = "96974c25dec188a196904287f4db7353e8bd9806b907a3eda59d71eddae3e053"
     ALGORITHM = "HS256"
-    ACCESS_TOKEN_EXPIRE_SECONDS = 10080 * 60
+    ACCESS_TOKEN_EXPIRE_SECONDS = 10080 * 60  # 七天
 
 
 class BaseConfig(object):
     """
     数据库配置
     """
-    # HOST = "49.232.14.115"
     HOST = "127.0.0.1"
-    USER = 'www'
-    PASSWORD = '-xFn9y2mK,dgfVVQ5#'
+    USER = 'root'
+    PASSWORD = '123456'
     PORT = '3306'
     DATABASE = 'EmploymentCommunity'
 

@@ -1,28 +1,28 @@
-from fastapi import Request
-from aioredis import Redis
+
 from sqlalchemy.future import Select
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.engine.result import Result, ChunkedIteratorResult
 from sqlalchemy import select, insert, or_, and_
 from datetime import datetime
+
+from starlette.requests import Request
 
 from configs import EncryptConfig
 from common.err import HTTPException, ErrEnum
 from common.encrypt import Encrypt
 from common.jwt import get_token_key
 from common.logger import logger
+from servers.base_server import BaseServer
 from schema_models.user_models import UserRegisterIn, UserLoginIn
 from schema_models.common_models import TokenData
 from models.user_models import UserModel
 
 
-class User(object):
-    def __init__(self, request: Request, ):
-        self.request = request
-        self.db: AsyncSession = request.state.db
-        self.redis: Redis = request.state.redis
+class User(BaseServer):
 
     async def get_user_by_user_name(self, user: UserRegisterIn) -> UserModel.id:
+        """
+        根据账号及邮箱查找用户是否存在
+        """
         stmt = select([UserModel.id]).where(or_(UserModel.account == user.account, UserModel.email == user.email))
 
         result = await self.db.execute(stmt)
@@ -30,7 +30,9 @@ class User(object):
         return user
 
     async def register(self, user: UserRegisterIn) -> UserModel:
-
+        """
+        注册新用户
+        """
         async with self.db.begin():
             old_user = await self.get_user_by_user_name(user)
             if old_user:
@@ -63,6 +65,9 @@ class User(object):
                 raise HTTPException(status=ErrEnum.Common.NETWORK_ERR, message="系统异常", data=err)
 
     async def create_token(self, user: UserModel, platform: str = "web") -> str:
+        """
+        创建token
+        """
         token_data = {
             "user_id": user.id,
             "account": user.account,
@@ -80,7 +85,9 @@ class User(object):
             raise HTTPException(message='Redis写入失败', status=ErrEnum.Common.REDIS_ERR)
 
     async def _find_user(self, user: UserLoginIn) -> UserModel:
-
+        """
+        根据账号或邮箱查找用户
+        """
         stmt: Select = select(UserModel).where(
             or_(UserModel.account == user.account, UserModel.email == user.email),
             UserModel.password == user.password)
@@ -92,6 +99,9 @@ class User(object):
         return user
 
     async def login(self, login_user: UserLoginIn):
+        """
+        登录
+        """
         login_user.password = await Encrypt.encrypt_password(login_user.password)
         async with self.db.begin():
             if user := await self._find_user(login_user):
