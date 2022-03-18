@@ -23,6 +23,7 @@ class InitMiddleware(BaseHTTPMiddleware):
             request.state.db = await get_async_db()
             request.state.redis = await get_async_redis_session()
             response = await call_next(request)
+            await request.state.redis.close()
             return response
         except Exception as err:
             logger.error(str(err))
