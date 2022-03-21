@@ -25,25 +25,24 @@ class ThrottleMiddleware(BaseHTTPMiddleware):
         return f"throttle:{hash_path}"
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        body = {}
-        try:
-            body = await request.json()
-        except Exception as e:
-            print(e)
+        # body = {}
+        # try:
+        #     body = await request.json()
+        # except Exception as e:
+        #     print(e)
 
-        hash_path = f'{request.client.host}{request.url.path}:{request.method}:' + \
-                    f'{request.headers.get("Authorization", "")}{body}:' + \
-                    f'{str(request.query_params)}:{str(request.path_params)}'
+        hash_path = f'{request.url.netloc}{request.url.path}:{request.method}:' + \
+                    f'{request.headers.get("Authorization", "")}:{request.client.host}'
 
         hash_path = await Encrypt.md5(hash_path)
 
         key = await self.get_hash_path(hash_path)
         redis: Redis = request.state.redis
-        a = await redis.get(key)
-        if a:
-            logger.info(a)
+        old = await redis.get(key)
+        if old:
             resp = RespModel(status=ErrEnum.Common.THROTTLE_ERR, message="访问频率过高,请稍后重试")
             return JSONResponse(content=resp.json(ensure_ascii=False))
-        c = await redis.set(key, 1, ex=1)
+        await redis.set(key, 1, ex=1)
+
         response = await call_next(request)
         return response
