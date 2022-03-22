@@ -1,5 +1,6 @@
 import hashlib
 from jose import JWTError, jwt
+from typing import Union
 from datetime import datetime, timedelta
 
 from configs import EncryptConfig
@@ -45,15 +46,14 @@ class Encrypt(object):
         return encoded_jwt
 
     @staticmethod
-    async def parse_token(token: str) -> TokenData:
+    async def parse_token(token: str) -> Union[TokenData, HTTPException]:
         try:
-            user = jwt.decode(token, EncryptConfig.SECRET_KEY, algorithms=[EncryptConfig.ALGORITHM],
-                              options={"require_exp": False})
+            user = jwt.decode(token, EncryptConfig.SECRET_KEY, algorithms=[EncryptConfig.ALGORITHM])
             if not isinstance(user, dict):
-                raise HTTPException(message="token_data格式异常", status=20000)
+                return HTTPException(message="token_data格式异常", status=20000)
             return TokenData(**user)
-        except JWTError:
-            raise HTTPException(message="token解码异常", status=20001)
+        except JWTError as err:
+            raise HTTPException(message=f"token解码异常:{err}", status=20001)
 
     @staticmethod
     async def md5(text: str):

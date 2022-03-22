@@ -73,9 +73,9 @@ class User(BaseServer):
             "platform": platform,
         }
         token_data = TokenData(**token_data)
-        token = await Encrypt.create_token(token_data, token=user.token)
-        token_key = await get_token_key(user.id, platform)
-        result = await self.redis.set(token_key, token, ex=EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS * 2)
+        token = await Encrypt.create_token(token_data)
+        token_key = await get_token_key(token, platform)
+        result = await self.redis.set(token_key, 1, ex=EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS * 2)
         if result:
             # user.token = token
             return token

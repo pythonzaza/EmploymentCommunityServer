@@ -1,9 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from fastapi.security import OAuth2
-
-oauth2_scheme = OAuth2()
-
 
 class EncryptConfig(object):
     """

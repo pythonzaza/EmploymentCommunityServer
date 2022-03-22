@@ -1,47 +1,57 @@
-from fastapi import Request
+from fastapi import Depends, Request, Header
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from aioredis import Redis
+from typing import Union
 from datetime import datetime
 
 from configs import EncryptConfig
-from common.encrypt import Encrypt
 from common.err import HTTPException, ErrEnum
+from common.encrypt import Encrypt
 from schema_models.common_models import TokenData
 
+http_bearer = HTTPBearer(auto_error=False)
 
-async def get_token_key(user_id, platform):
+
+async def get_token_key(token: Union[str, int], platform: str) -> str:
     """
     获取token的keyName
     :parma user_id 用户id
     :parma platform 平台
     """
-    return f"user:token:{platform}:userId{user_id}"
+    token_sign = token.split(".")[-1]
+    return f"user:token:{platform}:{token_sign}"
 
 
-async def verify_token(request: Request) -> TokenData:
-    """
-    验证token->依赖项
-    :parma request 请求对象
-    """
-    authorization: str = request.headers.get('Authorization', '')
-    token_type, token = authorization.split()
+async def jwt_auth(request: Request, platform: str = Header("web", description="平台"),
+                   token: HTTPAuthorizationCredentials = Depends(http_bearer)) -> Union[int, HTTPException]:
+    http_exception = HTTPException(status=ErrEnum.Common.TOKEN_ERR, message="Token 验证失败")
 
-    if token_type != 'Bearer':
-        raise HTTPException(status=ErrEnum.Common.TOKEN_ERR, message="token异常")
+    if token is None:
+        http_exception.message = "无效Token"
+        return http_exception
 
-    token_data = await Encrypt.parse_token(token)
+    if platform.lower() not in ["web", "android", "ios"]:
+        http_exception.message = "无效Platform"
+        return http_exception
 
-    redis_db: Redis = request.state.redis
-    token_key = await get_token_key(token_data.user_id, token_data.platform)
-    server_token = await redis_db.get(token_key)
+    # 检查服务端Token
+    redis: Redis = request.state.redis
+    token_key = await get_token_key(token.credentials, platform)
+    _token = await redis.get(token_key)
 
-    if not server_token:
-        raise HTTPException(status=ErrEnum.Common.TOKEN_ERR, message="Token异常")
+    if not _token:
+        http_exception.message = "Token失效"
+        return http_exception
+
+    # 解析服务端代码
+    token_data = await Encrypt.parse_token(token.credentials)
 
     if token_data.exp < datetime.now():
-        key_ttl = await redis_db.ttl(token_key)
+        # token静默续期
+        key_ttl = await redis.ttl(token_key)
         if key_ttl < EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS:
-            await redis_db.set(name=token_key, value=token, ex=EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS)
+            await redis.set(name=token_key, value=1, ex=EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS)
 
-    # request.scope['user'] = token_data.user_id
-    # request.scope['auth'] = token_data
-    return token_data
+    request.scope["user"] = token_data.user_id
+    request.scope["auth"] = token_data
+    return token_data.user_id
