@@ -1,8 +1,8 @@
 from servers.base_server import BaseServer
 from sqlalchemy import insert, update, select, or_, func
 from sqlalchemy.engine.result import ChunkedIteratorResult
+from sqlalchemy.engine.cursor import CursorResult
 from sqlalchemy.orm import selectinload
-from typing import Union
 
 from common.err import HTTPException, ErrEnum
 from schema_models.enterprise_models import CreateEnterPriseModel, UpdateEnterPriseModel
@@ -29,22 +29,26 @@ class EnterPriseServer(BaseServer):
         if enterprise:
             raise HTTPException(status=ErrEnum.EnterPrise.ENTERPRISE_EXIST, message="企业已存在")
 
-    async def create_enterprise(self, new_enterprise: CreateEnterPriseModel) -> Union[EnterPriseModel, HTTPException]:
+    async def create_enterprise(self, new_enterprise: CreateEnterPriseModel) -> EnterPriseModel:
         """
         创建新企业
         """
         # async with self.db.begin():
         await self.check_enterprise(new_enterprise)
 
-        # stmt = insert(EnterPriseModel)
-        # result = await self.db.execute(stmt, new_enterprise.dict())
-        # if result.is_insert:
-        #     await self.db.commit()
         try:
-            _new_enterprise = EnterPriseModel(create_user_id=self.request.user, **new_enterprise.dict())
+            # _new_enterprise = EnterPriseModel(create_user_id=self.request.user, **new_enterprise.dict())
+            # self.db.add(_new_enterprise)
+            insert_stmt = insert(EnterPriseModel).values(create_user_id=self.request.user, **new_enterprise.dict())
+            result: CursorResult = await self.db.execute(insert_stmt)
+            if result.is_insert:
+                await self.db.commit()
+            else:
+                raise HTTPException(status=ErrEnum.Common.NETWORK_ERR, message="网络异常")
+            select_stmt = select(EnterPriseModel).where(EnterPriseModel.id == result.lastrowid)
+            result: ChunkedIteratorResult = await self.db.execute(select_stmt)
+            _new_enterprise = result.scalars().first()
 
-            self.db.add(_new_enterprise)
-            await self.db.commit()
             return _new_enterprise
         except Exception as err:
             raise HTTPException(status=ErrEnum.Common.NETWORK_ERR, message="网络异常", data=str(err))
@@ -76,13 +80,13 @@ class EnterPriseServer(BaseServer):
         enterprise_list = result.scalars().fetchall()
         return enterprise_list, total
 
-    async def get_enterprise_by_id(self, enterprise__id: int):
+    async def get_enterprise_by_id(self, enterprise_id: int) -> EnterPriseModel:
         """
         根据code精确查询或根据名字模糊查询企业列表
-        @param enterprise__id: 企业id
+        @param enterprise_id: 企业id
         """
 
-        stmt = select(EnterPriseModel).where(or_(EnterPriseModel.id == enterprise__id), EnterPriseModel.status != -1, )
+        stmt = select(EnterPriseModel).where(or_(EnterPriseModel.id == enterprise_id), EnterPriseModel.status != -1, )
         result: ChunkedIteratorResult = await self.db.execute(stmt)
         enterprise_details = result.scalars().first()
 
@@ -90,3 +94,21 @@ class EnterPriseServer(BaseServer):
             raise HTTPException(status=ErrEnum.EnterPrise.ENTERPRISE_NOT_EXIST, message="企业不存在")
 
         return enterprise_details
+
+    async def update_enterprise_by_id(self, new_enterprise_details: UpdateEnterPriseModel):
+        """
+        根据code精确查询或根据名字模糊查询企业列表
+        @param new_enterprise_details: 企业新资料
+        """
+
+        async with self.db.begin():
+            params: dict = new_enterprise_details.dict(exclude={"enterprise_id"})
+            _new_enterprise_details = {k: v for k, v in params.items() if v}
+            stmt = update(EnterPriseModel).where(EnterPriseModel.id == new_enterprise_details.enterprise_id)
+            result: CursorResult = await self.db.execute(stmt, _new_enterprise_details)
+
+            if result.rowcount == 1:
+                await self.db.commit()
+            else:
+                # await self.db.rollback()
+                raise HTTPException(status=ErrEnum.EnterPrise.ENTERPRISE_NOT_EXIST, message="企业不存在")

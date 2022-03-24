@@ -2,7 +2,9 @@ from fastapi import APIRouter, Request, Query, Depends
 
 from common.err import HTTPException
 from common.depends import jwt_auth
-from schema_models.enterprise_models import (CreateEnterPriseModel, EnterPriseDetailsModel, EnterPriseListModel, )
+from schema_models.base_model import RespModel
+from schema_models.enterprise_models import (CreateEnterPriseModel, EnterPriseDetailsModel, EnterPriseListModel,
+                                             UpdateEnterPriseModel,EnterPriseModelDetails)
 from servers.enterprise_servers import EnterPriseServer
 
 enterprise_router = APIRouter()
@@ -23,13 +25,30 @@ async def create_enter_prise(request: Request, new_enterprise: CreateEnterPriseM
 async def enter_prise_list(request: Request, key: str = Query("", description="关键字,名称或信用码"),
                            page_index: int = Query(1, description="页码", ge=0),
                            page_size: int = Query(10, description="分页大小", ge=0, le=30)):
+    """
+    获取企业列表
+    """
     server = EnterPriseServer(request)
     enterprise_list, total = await server.get_enterprise_list(key, page_index, page_size)
+
     return EnterPriseListModel(data=enterprise_list, total=total)
 
 
 @enterprise_router.get("/enterprise/details", response_model=EnterPriseDetailsModel, name="获取企业详情")
 async def enter_prise_list(request: Request, enterprise_id: int = Query(1, description="企业id", ge=0)):
+    """
+    获取企业详情
+    """
     server = EnterPriseServer(request)
     enterprise_details = await server.get_enterprise_by_id(enterprise_id)
     return EnterPriseDetailsModel(data=enterprise_details)
+
+
+@enterprise_router.post("/update", response_model=RespModel, name="修改企业资料")
+async def create_enter_prise(request: Request, new_enterprise: UpdateEnterPriseModel, _=Depends(jwt_auth)):
+    """
+    ## 创建公司信息
+    """
+    server = EnterPriseServer(request)
+    await server.update_enterprise_by_id(new_enterprise)
+    return RespModel(data=True)
