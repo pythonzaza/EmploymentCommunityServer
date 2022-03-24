@@ -28,16 +28,16 @@ async def get_platform(platform: str = Header("web", description="平台"))->str
 
 
 async def jwt_auth(request: Request, platform: str = Header("web", description="平台"),
-                   token: HTTPAuthorizationCredentials = Depends(http_bearer)) -> Union[int, HTTPException]:
+                   token: HTTPAuthorizationCredentials = Depends(http_bearer)) -> int:
     http_exception = HTTPException(status=ErrEnum.Common.TOKEN_ERR, message="Token 验证失败")
 
     if token is None:
         http_exception.message = "无效Token"
-        return http_exception
+        raise http_exception
 
     if platform.lower() not in ["web", "android", "ios"]:
         http_exception.message = "无效Platform"
-        return http_exception
+        raise http_exception
 
     # 解析token
     token_data = await Encrypt.parse_token(token.credentials)
@@ -49,7 +49,7 @@ async def jwt_auth(request: Request, platform: str = Header("web", description="
 
     if not _token:
         http_exception.message = "Token失效"
-        return http_exception
+        raise http_exception
 
     if token_data.exp < datetime.utcnow().astimezone(timezone(timedelta(hours=8))):
         # token静默续期
