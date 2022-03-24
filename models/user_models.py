@@ -14,4 +14,4 @@ class UserModel(Base):
     token: str = Column(String, server_default="")  # 根token
     register_time: DATETIME = Column(DATETIME, server_default=func.now())  # 注册时间
     register_ip: str = Column(String)  # 注册ip
-    status: int = Column(Integer, default=1)
+    status: int = Column(Integer, default=1)  # 用户状态 1正常,-1禁用
