@@ -6,7 +6,7 @@ from starlette.responses import Response
 from starlette.types import ASGIApp
 
 from common.db import get_async_redis_session, get_async_db
-from common.err import ErrEnum
+from common.err import ErrEnum, HTTPException
 from common.logger import logger
 
 
@@ -25,6 +25,9 @@ class InitMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
             await request.state.redis.close()
             return response
+
+        except HTTPException as err:
+            raise err
         except Exception as err:
             logger.error(str(err))
             return JSONResponse(content={"status": ErrEnum.Common.NETWORK_ERR, "message": "系统异常", "data": str(err)})
