@@ -7,6 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from controller.common_controller import common_router
 from controller.article_controller import article_router
+from controller.enterprise_controller import enterprise_router
+from schema_models.base_model import RespModel422
 from common.err import HTTPException, ErrEnum
 from middleware.init_middleware import InitMiddleware
 from middleware.throttle_middleware import ThrottleMiddleware
@@ -73,8 +75,10 @@ async def validation_exception_handler(request, exc):
 
 
 # 路由配置
-app.include_router(common_router, prefix='/common', tags=["Common"])
-app.include_router(article_router, prefix='/article', tags=["Article"])
+app.include_router(common_router, prefix='/common', tags=["Common"], responses={422: {"model": RespModel422}})
+# app.include_router(article_router, prefix='/article', tags=["Article"])
+app.include_router(enterprise_router, prefix='/enterprise', tags=["Enterprise"],
+                   responses={422: {"model": RespModel422}})
 
 if __name__ == '__main__':
     import uvicorn

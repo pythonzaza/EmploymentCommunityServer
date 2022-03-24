@@ -9,3 +9,9 @@ class RespModel(BaseModel):
 
     # def json(self, *args, **kwargs):
     #     super().json(ensure_ascii=False, *args, **kwargs)
+
+
+class RespModel422(RespModel):
+    status = 422
+    message = "数据格式异常"
+    data: str = ""

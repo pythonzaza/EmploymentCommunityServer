@@ -2,7 +2,7 @@ from fastapi import Depends, Request, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from aioredis import Redis
 from typing import Union
-from datetime import datetime
+from datetime import datetime,timezone,timedelta
 
 from configs import EncryptConfig
 from common.err import HTTPException, ErrEnum
@@ -46,7 +46,7 @@ async def jwt_auth(request: Request, platform: str = Header("web", description="
     # 解析服务端代码
     token_data = await Encrypt.parse_token(token.credentials)
 
-    if token_data.exp < datetime.now():
+    if token_data.exp < datetime.utcnow().astimezone(timezone(timedelta(hours=8))):
         # token静默续期
         key_ttl = await redis.ttl(token_key)
         if key_ttl < EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS:

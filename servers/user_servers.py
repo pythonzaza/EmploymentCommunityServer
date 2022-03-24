@@ -1,4 +1,3 @@
-
 from sqlalchemy.future import Select
 from sqlalchemy.engine.result import ChunkedIteratorResult
 from sqlalchemy import select, insert, or_, and_
