@@ -12,14 +12,13 @@ from schema_models.common_models import TokenData
 http_bearer = HTTPBearer(auto_error=False)
 
 
-async def get_token_key(token: Union[str, int], platform: str) -> str:
+async def get_token_key(user_id: int, platform: str) -> str:
     """
     获取token的keyName
     :parma user_id 用户id
     :parma platform 平台
     """
-    token_sign = token.split(".")[-1]
-    return f"user:token:{platform}:{token_sign}"
+    return f"user:token:{platform}:{user_id}"
 
 
 async def jwt_auth(request: Request, platform: str = Header("web", description="平台"),
@@ -34,17 +33,17 @@ async def jwt_auth(request: Request, platform: str = Header("web", description="
         http_exception.message = "无效Platform"
         return http_exception
 
+    # 解析token
+    token_data = await Encrypt.parse_token(token.credentials)
+
     # 检查服务端Token
     redis: Redis = request.state.redis
-    token_key = await get_token_key(token.credentials, platform)
+    token_key = await get_token_key(token_data.user_id, platform)
     _token = await redis.get(token_key)
 
     if not _token:
         http_exception.message = "Token失效"
         return http_exception
-
-    # 解析服务端代码
-    token_data = await Encrypt.parse_token(token.credentials)
 
     if token_data.exp < datetime.utcnow().astimezone(timezone(timedelta(hours=8))):
         # token静默续期
