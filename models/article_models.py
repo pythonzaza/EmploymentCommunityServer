@@ -23,8 +23,8 @@ class ArticleListModel(Base):
     content: str = Column(String)  # 正文
     user_id: str = Column(String)  # 作者
     create_time: DATETIME = Column(DATETIME, server_default=func.now())  # 创建时间
-    praise: str = Column(Integer, server_default=0)  # 点赞
-    read: str = Column(Integer, server_default=0)  # 阅读
-    last_reply_time: str = Column(DATETIME, server_default=func.now())  # 最后回复时间
-    recommended: int = Column(Integer)  # 推荐
-    status: int = Column(Integer)
+    praise: int = Column(Integer, default=0)  # 点赞
+    # read: int = Column(Integer, server_default=0)  # 阅读
+    # last_reply_time: str = Column(DATETIME, server_default=func.now())  # 最后回复时间
+    # recommended: int = Column(Integer, server_default=0)  # 推荐
+    # status: int = Column(Integer, server_default=1)  # 状态
