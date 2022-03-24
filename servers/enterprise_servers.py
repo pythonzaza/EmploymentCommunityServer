@@ -5,7 +5,7 @@ from sqlalchemy.orm import selectinload
 from typing import Union
 
 from common.err import HTTPException, ErrEnum
-from schema_models.enterprise_models import CreateEnterPriseModel, EnterPriseListIn
+from schema_models.enterprise_models import CreateEnterPriseModel, UpdateEnterPriseModel
 from models.enterprise_models import EnterPriseModel
 
 
@@ -85,4 +85,8 @@ class EnterPriseServer(BaseServer):
         stmt = select(EnterPriseModel).where(or_(EnterPriseModel.id == enterprise__id), EnterPriseModel.status != -1, )
         result: ChunkedIteratorResult = await self.db.execute(stmt)
         enterprise_details = result.scalars().first()
+
+        if not enterprise_details:
+            raise HTTPException(status=ErrEnum.EnterPrise.ENTERPRISE_NOT_EXIST, message="企业不存在")
+
         return enterprise_details

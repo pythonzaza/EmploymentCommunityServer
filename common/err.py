@@ -38,4 +38,5 @@ class ErrEnum:
         TYPE_NOT_EXIST = 30001  # 分类不存在
 
     class EnterPrise(IntEnum):
-        ENTERPRISE_EXIST = 40001
+        ENTERPRISE_EXIST = 40001  # 企业已存在
+        ENTERPRISE_NOT_EXIST = 40002  # 企业不存在

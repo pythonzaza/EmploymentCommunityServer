@@ -8,17 +8,15 @@ from schema_models.base_model import RespModel
 
 class CreateEnterPriseModel(BaseModel):
     name: str = Field(..., description="公司名称", min_length=4, max_length=30)
-    legal_person: str = Field(..., description="公司法人", min_length=2, max_length=30)
-    address: str = Field(..., description="公司地址", max_length=30)
+    legal_person: str = Field("", description="公司法人", min_length=2, max_length=30)
+    address: str = Field("", description="公司地址", max_length=30)
     details: str = Field("", description="公司详情", max_length=1000)
     code: Optional[str] = Field(None, description="公司统一社会信用码,可在天眼查查询,未填写时请输入null或省略该字段", max_length=30)
     TYX_url: str = Field("", description="天眼查中的公司链接")
 
 
-class EnterPriseListIn(BaseModel):
-    key: str = Query("", description="关键字,名称或信用码")
-    page_index: int = Query(1, description="页码", le=0)
-    page_size: int = Query(10, description="分页大小", le=0, ge=30)
+class UpdateEnterPriseModel(CreateEnterPriseModel):
+    enterprise_id: int = Field("", description="企业id")
 
 
 class EnterPriseModelDetails(CreateEnterPriseModel):
