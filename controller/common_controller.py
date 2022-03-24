@@ -30,12 +30,12 @@ async def register(request: Request, new_user: UserRegisterIn):
     return UserInfoOut(data=data)
 
 
-@common_router.post("/login", name="登录")
+@common_router.post("/login", response_model=UserInfoOut, name="登录")
 async def login(request: Request, login_user: UserLoginIn, platform: str = Depends(get_platform)):
     """
     ## 登录
     """
     user = User(request)
     login_user = await user.login(login_user, platform)
-    data = UserInfoOutData.from_orm(login_user)
-    return UserInfoOut(data=data)
+    # data = UserInfoOutData.from_orm(login_user)
+    return UserInfoOut(data=login_user)
