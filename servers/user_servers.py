@@ -101,7 +101,8 @@ class User(BaseServer):
         """
         login_user.password = await Encrypt.encrypt_password(login_user.password)
         async with self.db.begin():
-            if user := await self._find_user(login_user):
-                new_token = await self.create_token(user=user)
+            user = await self._find_user(login_user)
+
+        new_token = await self.create_token(user=user)
         user.token = new_token
         return user
