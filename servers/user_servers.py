@@ -103,6 +103,9 @@ class User(BaseServer):
         async with self.db.begin():
             user = await self._find_user(login_user)
 
+        if user.status == -1:
+            raise HTTPException(status=ErrEnum.User.ACCOUNT_DISABLE, message="账号被禁用")
+
         new_token = await self.create_token(user=user, platform=platform)
         user.token = new_token
         return user

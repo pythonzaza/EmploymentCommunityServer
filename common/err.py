@@ -33,6 +33,7 @@ class ErrEnum:
     class User(IntEnum):
         USER_REPEAT = 20001  # 用户已存在
         ACCOUNT_OR_PWD_ERR = 20002  # 账号或密码错误
+        ACCOUNT_DISABLE = 20003  # 账号被禁用
 
     class Article(IntEnum):
         TYPE_NOT_EXIST = 30001  # 分类不存在
