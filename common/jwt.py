@@ -2,7 +2,7 @@ from fastapi import Depends, Request, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from aioredis import Redis
 from typing import Union
-from datetime import datetime,timezone,timedelta
+from datetime import datetime, timezone, timedelta
 
 from configs import EncryptConfig
 from common.err import HTTPException, ErrEnum
@@ -19,6 +19,12 @@ async def get_token_key(user_id: int, platform: str) -> str:
     :parma platform 平台
     """
     return f"user:token:{platform}:{user_id}"
+
+
+async def get_platform(platform: str = Header("web", description="平台"))->str:
+    if platform.lower() not in ["web", "android", "ios"]:
+        HTTPException(status=ErrEnum.Common.TOKEN_ERR, message="不支持的platform")
+    return platform
 
 
 async def jwt_auth(request: Request, platform: str = Header("web", description="平台"),

@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, EmailStr, root_validator
 from typing import Optional, Any
+from fastapi import Header
 
 from schema_models.base_model import RespModel
 

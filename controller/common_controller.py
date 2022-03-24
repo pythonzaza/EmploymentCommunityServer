@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Request
-from fastapi import Body, Query
+from fastapi import APIRouter, Request, Depends
 from schema_models.user_models import (
     UserRegisterIn, UserInfoOut, UserInfoOutData, UserLoginIn
 )
+
 from servers.user_servers import User
+from common.depends import get_platform
 
 common_router = APIRouter()
 
@@ -30,11 +31,11 @@ async def register(request: Request, new_user: UserRegisterIn):
 
 
 @common_router.post("/login", name="登录")
-async def login(request: Request, login_user: UserLoginIn):
+async def login(request: Request, login_user: UserLoginIn, platform: str = Depends(get_platform)):
     """
     ## 登录
     """
     user = User(request)
-    login_user = await user.login(login_user)
+    login_user = await user.login(login_user, platform)
     data = UserInfoOutData.from_orm(login_user)
     return UserInfoOut(data=data)

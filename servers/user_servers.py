@@ -95,7 +95,7 @@ class User(BaseServer):
             raise HTTPException(status=ErrEnum.User.ACCOUNT_OR_PWD_ERR, message="账号或密码错误")
         return user
 
-    async def login(self, login_user: UserLoginIn):
+    async def login(self, login_user: UserLoginIn, platform: str):
         """
         登录
         """
@@ -103,6 +103,6 @@ class User(BaseServer):
         async with self.db.begin():
             user = await self._find_user(login_user)
 
-        new_token = await self.create_token(user=user)
+        new_token = await self.create_token(user=user, platform=platform)
         user.token = new_token
         return user
