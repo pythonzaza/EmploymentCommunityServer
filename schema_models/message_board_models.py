@@ -29,8 +29,8 @@ class MessageDetailsModel(CreateMessageModel):
     reply_user_name: Optional[str] = Field(None, description="被回复用户名")
     reply_message_id: Optional[int] = Field(None, description="被回复消息id")
     user_name: str = Field(..., description="用户名")
-    comment_number: int = Field(..., description="回复次数")
-    like_number: int = Field(..., description="点赞次数")
+    comment_number: int = Field(..., description="回复次数,暂未启用")
+    like_number: int = Field(..., description="点赞次数,暂未启用")
     create_time: datetime = Field(..., description="创建时间")
 
     class Config:

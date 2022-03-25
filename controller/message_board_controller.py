@@ -27,3 +27,10 @@ async def create(request: Request, message_id: int = Query(..., description="留
     message_board_server = MessageBoardServer(request)
     del_id = await message_board_server.delete(message_id)
     return CreateMessageOutModel(data=del_id)
+
+
+# @message_board_router.post("/like", response_model=CreateMessageOutModel, name="留言点赞")
+# async def create(request: Request, message_id: int = Query(..., description="留言id"), _=Depends(jwt_auth)):
+#     message_board_server = MessageBoardServer(request)
+#     del_id = await message_board_server.delete(message_id)
+#     return CreateMessageOutModel(data=del_id)

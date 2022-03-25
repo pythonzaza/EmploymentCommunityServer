@@ -78,12 +78,10 @@ async def validation_exception_handler(request, exc):
 # 路由配置
 app.include_router(common_router, prefix='/common', tags=["公共"], responses={422: {"model": RespModel422}})
 # app.include_router(article_router, prefix='/article', tags=["Article"])
-app.include_router(enterprise_router, prefix='/enterprise', tags=["企业"],
-                   responses={422: {"model": RespModel422}})
-app.include_router(message_board_router, prefix='/messageBoard', tags=["留言板"],
-                   responses={422: {"model": RespModel422}})
+app.include_router(enterprise_router, prefix='/enterprise', tags=["企业"], responses={422: {"model": RespModel422}})
+app.include_router(message_board_router, prefix='/messageBoard', tags=["留言板"], responses={422: {"model": RespModel422}})
 
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(**AppConfig.config)
+    uvicorn.run(**AppConfig)

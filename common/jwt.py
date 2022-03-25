@@ -1,7 +1,6 @@
 from fastapi import Depends, Request, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from aioredis import Redis
-from typing import Union
 from datetime import datetime, timezone, timedelta
 
 from configs import EncryptConfig
@@ -21,26 +20,26 @@ async def get_token_key(user_id: int, platform: str) -> str:
     return f"user:token:{platform}:{user_id}"
 
 
-async def get_platform(platform: str = Header("web", description="平台"))->str:
+async def get_platform(platform: str = Header("web", description="平台")) -> str:
     if platform.lower() not in ["web", "android", "ios"]:
         HTTPException(status=ErrEnum.Common.TOKEN_ERR, message="不支持的platform")
     return platform
 
 
-async def jwt_auth(request: Request, platform: str = Header("web", description="平台"),
+async def jwt_auth(request: Request, platform: str = Depends(get_platform),
                    token: HTTPAuthorizationCredentials = Depends(http_bearer)) -> int:
+    """
+    JWT认证
+    """
+
     http_exception = HTTPException(status=ErrEnum.Common.TOKEN_ERR, message="Token 验证失败")
 
     if token is None:
         http_exception.message = "无效Token"
         raise http_exception
 
-    if platform.lower() not in ["web", "android", "ios"]:
-        http_exception.message = "无效Platform"
-        raise http_exception
-
     # 解析token
-    token_data = await Encrypt.parse_token(token.credentials)
+    token_data: TokenData = await Encrypt.parse_token(token.credentials)
 
     # 检查服务端Token
     redis: Redis = request.state.redis
@@ -51,7 +50,9 @@ async def jwt_auth(request: Request, platform: str = Header("web", description="
         http_exception.message = "Token失效"
         raise http_exception
 
-    if token_data.exp < datetime.utcnow().astimezone(timezone(timedelta(hours=8))):
+    # noinspection PyPep8Naming
+    BeiJing: timezone = timezone(timedelta(hours=8))
+    if token_data.exp < datetime.utcnow().astimezone(BeiJing):
         # token静默续期
         key_ttl = await redis.ttl(token_key)
         if key_ttl < EncryptConfig.ACCESS_TOKEN_EXPIRE_SECONDS:

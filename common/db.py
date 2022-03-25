@@ -19,7 +19,7 @@ async def get_async_db() -> AsyncSession:
 
 
 async def get_async_redis_session() -> Redis:
-    redis_pool = await from_url(RedisConfig.host, encoding=RedisConfig.encoding, )
+    redis_pool = await from_url(RedisConfig.HOST, encoding=RedisConfig.ENCODING, )
     async with redis_pool.client() as redis_session:
         return redis_session
 

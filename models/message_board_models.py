@@ -1,6 +1,5 @@
-from typing import Optional, Union
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DECIMAL, DATETIME
+from sqlalchemy import Column, Integer, String, DATETIME
 from sqlalchemy import func
 
 from common.db import Base
@@ -25,3 +24,16 @@ class MessageBoardModel(Base):
     create_time: datetime = Column(DATETIME, default=func.now())  # 创建时间
     status: int = Column(Integer, default=1)  # 状态 1正常 -1删除
     # last_time = Column(DATETIME, default=func.now())  # 最后回复时间
+
+
+class MessageLikeLogModel(Base):
+    """
+    留言点赞记录
+    """
+    __tablename__ = "message_like_log"
+    id: int = Column(Integer, primary_key=True, autoincrement=True)
+    message_id: int = Column(Integer)  # 留言id
+    user_id: int = Column(Integer)  # 用户id
+    create_time: datetime = Column(DATETIME, default=func.now())  # 创建时间
+    update_time: datetime = Column(DATETIME, default=func.now())  # 修改时间
+    status: int = Column(Integer, default=1)
