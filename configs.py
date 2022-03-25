@@ -70,6 +70,8 @@ AppConfig = AppConfig().dict()
 if not BaseConfig.DATABASE_URL:
     BaseConfig.DATABASE_URL = DATABASE_URL = f"mysql+aiomysql://{BaseConfig.USER}:{BaseConfig.PASSWORD}@{BaseConfig.HOST}:{BaseConfig.PORT}/{BaseConfig.DATABASE}?charset={BaseConfig.CHARSET}"
 
-async_engine = create_async_engine(BaseConfig.DATABASE_URL, echo=True, future=True)
+data_base_echo = AppConfig["debug"]
+
+async_engine = create_async_engine(BaseConfig.DATABASE_URL, echo=data_base_echo, future=True)
 
 __all__ = ["EncryptConfig", "RedisConfig", "AppConfig", "async_engine"]
