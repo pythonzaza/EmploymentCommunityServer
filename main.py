@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from controller.common_controller import common_router
 from controller.article_controller import article_router
 from controller.enterprise_controller import enterprise_router
+from controller.message_board_controller import message_board_router
 from schema_models.base_model import RespModel422
 from common.err import HTTPException, ErrEnum
 from middleware.init_middleware import InitMiddleware
@@ -15,7 +16,7 @@ from middleware.throttle_middleware import ThrottleMiddleware
 
 from configs import AppConfig
 
-app = FastAPI(title='EmploymentCommunity-就业社区')
+app = FastAPI(title='EmploymentCommunity')
 
 # swagger身份验证器
 OAuth2 = HTTPBearer()
@@ -75,9 +76,11 @@ async def validation_exception_handler(request, exc):
 
 
 # 路由配置
-app.include_router(common_router, prefix='/common', tags=["Common"], responses={422: {"model": RespModel422}})
+app.include_router(common_router, prefix='/common', tags=["公共"], responses={422: {"model": RespModel422}})
 # app.include_router(article_router, prefix='/article', tags=["Article"])
-app.include_router(enterprise_router, prefix='/enterprise', tags=["Enterprise"],
+app.include_router(enterprise_router, prefix='/enterprise', tags=["企业"],
+                   responses={422: {"model": RespModel422}})
+app.include_router(message_board_router, prefix='/messageBoard', tags=["留言板"],
                    responses={422: {"model": RespModel422}})
 
 if __name__ == '__main__':

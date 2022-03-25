@@ -29,6 +29,19 @@ class EnterPriseServer(BaseServer):
         if enterprise:
             raise HTTPException(status=ErrEnum.EnterPrise.ENTERPRISE_EXIST, message="企业已存在")
 
+    async def check_enterprise_by_id(self, enterprise_id: int):
+        """
+        检查企业是否存在
+        """
+
+        stmt = select(EnterPriseModel).where(EnterPriseModel.id == enterprise_id, EnterPriseModel.status != -1)
+
+        result: ChunkedIteratorResult = await self.db.execute(stmt)
+
+        enterprise = result.scalars().first()
+        if not enterprise:
+            raise HTTPException(status=ErrEnum.EnterPrise.ENTERPRISE_NOT_EXIST, message="企业不存在")
+
     async def create_enterprise(self, new_enterprise: CreateEnterPriseModel) -> EnterPriseModel:
         """
         创建新企业

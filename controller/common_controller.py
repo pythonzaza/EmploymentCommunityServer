@@ -3,7 +3,7 @@ from schema_models.user_models import (
     UserRegisterIn, UserInfoOut, UserInfoOutData, UserLoginIn
 )
 
-from servers.user_servers import User
+from servers.user_servers import UserServer
 from common.depends import get_platform
 
 common_router = APIRouter()
@@ -20,7 +20,7 @@ async def register(request: Request, new_user: UserRegisterIn):
     ## 注册
     新用户注册时调用, 邀请码和验证码暂未启用
     """
-    user = User(request)
+    user = UserServer(request)
     new_user = await user.register(new_user)
     token = await user.create_token(new_user)
 
@@ -35,7 +35,7 @@ async def login(request: Request, login_user: UserLoginIn, platform: str = Depen
     """
     ## 登录
     """
-    user = User(request)
+    user = UserServer(request)
     login_user = await user.login(login_user, platform)
     # data = UserInfoOutData.from_orm(login_user)
     return UserInfoOut(data=login_user)

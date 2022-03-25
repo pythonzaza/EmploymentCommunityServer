@@ -14,7 +14,7 @@ from schema_models.common_models import TokenData
 from models.user_models import UserModel
 
 
-class User(BaseServer):
+class UserServer(BaseServer):
 
     async def get_user_by_user_name(self, user: UserRegisterIn) -> UserModel.id:
         """
@@ -108,4 +108,16 @@ class User(BaseServer):
 
         new_token = await self.create_token(user=user, platform=platform)
         user.token = new_token
+        return user
+
+    async def get_user_by_id(self, user_id: int) -> UserModel:
+        """
+        根据id查找用户
+        """
+        stmt: Select = select(UserModel).where(UserModel.id == user_id, UserModel.status != -1)
+        result: ChunkedIteratorResult = await self.db.execute(stmt)
+        user = result.scalars().first()
+
+        if not user:
+            raise HTTPException(status=ErrEnum.User.USER_NOT_EXIST, message="用户不存在")
         return user
