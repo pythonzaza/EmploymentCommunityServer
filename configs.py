@@ -1,6 +1,4 @@
 from sqlalchemy.ext.asyncio import create_async_engine
-from typing import Optional, Any
-
 from pydantic import BaseSettings, Field
 
 
