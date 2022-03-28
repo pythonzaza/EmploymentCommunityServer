@@ -43,4 +43,11 @@ gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bin
 
 #### 4. 配置文件
 配置文件configs.py中可设置默认值, 若.env文件或环境变量中有同名配置, 
-则以环境变量为准,建议默认值设为测试环境配置, 正式服务器中
+则以环境变量为准,建议默认值设为测试环境配置, 正式服务器在.env文件配置相关参数
+
+#### 5. 演示
+[接口文档-docs版](http://49.232.14.115/docs) || 
+[接口文档-Redoc版](http://49.232.14.115/redoc)  
+
+##### 6. 联系我
+- QQ:1164096478
