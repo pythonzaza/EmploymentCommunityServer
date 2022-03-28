@@ -14,8 +14,8 @@ class EncryptConfig(BaseSetting):
     配置加密密钥
     key应为8-24位
     """
-    PASSWORD_KEY: str = '!@#$%^~~!qwg'
-    SECRET_KEY: str = "96974c25dec188a196904287f4db7353e8bd9806b907a3eda59d71eddae3e053"
+    PASSWORD_KEY: str
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_SECONDS: int = 10080 * 60  # 七天
 
@@ -31,7 +31,7 @@ class BaseConfig(BaseSetting):
     USER: str
     PASSWORD: str
     PORT: int
-    DATABASE: str = 'EmploymentCommunity'
+    DATABASE: str
     DATABASE_URL: str
     CHARSET: str = "UTF8MB4"
 
@@ -68,7 +68,8 @@ RedisConfig = RedisConfig()
 AppConfig = AppConfig().dict()
 
 if not BaseConfig.DATABASE_URL:
-    BaseConfig.DATABASE_URL = DATABASE_URL = f"mysql+aiomysql://{BaseConfig.USER}:{BaseConfig.PASSWORD}@{BaseConfig.HOST}:{BaseConfig.PORT}/{BaseConfig.DATABASE}?charset={BaseConfig.CHARSET}"
+    BaseConfig.DATABASE_URL = f"mysql+aiomysql://{BaseConfig.USER}:{BaseConfig.PASSWORD}@" \
+                              f"{BaseConfig.HOST}:{BaseConfig.PORT}/{BaseConfig.DATABASE}?charset={BaseConfig.CHARSET}"
 
 data_base_echo = AppConfig["debug"]
 
