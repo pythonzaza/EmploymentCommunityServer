@@ -9,10 +9,13 @@ from controller.common_controller import common_router
 from controller.article_controller import article_router
 from controller.enterprise_controller import enterprise_router
 from controller.message_board_controller import message_board_router
+
 from schema_models.base_model import RespModel422
 from common.err import HTTPException, ErrEnum
+
 from middleware.init_middleware import InitMiddleware
 from middleware.throttle_middleware import ThrottleMiddleware
+from middleware.exception_handler_middleware import ExceptionMiddleware
 
 from configs import AppConfig
 
@@ -32,6 +35,7 @@ app.add_middleware(
 
 app.add_middleware(ThrottleMiddleware)
 app.add_middleware(InitMiddleware)
+app.add_middleware(ExceptionMiddleware)
 
 
 # @app.middleware('http')
@@ -53,7 +57,7 @@ async def unicorn_exception_handler(request: Request, err: HTTPException):
         content={
             "message": err.message,
             "status": err.status,
-            "data": str(err.data) if AppConfig['debug'] else [],
+            "data": str(err.data) if AppConfig['debug'] else "",
         },
     )
 
