@@ -53,7 +53,7 @@ async def unicorn_exception_handler(request: Request, err: HTTPException):
         content={
             "message": err.message,
             "status": err.status,
-            "data": str(err.data) if AppConfig.config['debug'] else [],
+            "data": str(err.data) if AppConfig['debug'] else [],
         },
     )
 
