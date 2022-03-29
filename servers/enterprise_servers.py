@@ -16,9 +16,8 @@ class EnterPriseServer(BaseServer):
         检查企业是否存在
         """
         if new_enterprise.code is not None:
-            stmt = select(EnterPriseModel).where(or_(EnterPriseModel.name == new_enterprise.name,
-                                                     EnterPriseModel.code == new_enterprise.code),
-                                                 EnterPriseModel.status != -1)
+            stmt = select(EnterPriseModel).where(EnterPriseModel.status != -1) \
+                .where(or_(EnterPriseModel.name == new_enterprise.name, EnterPriseModel.code == new_enterprise.code))
         else:
             stmt = select(EnterPriseModel).where(EnterPriseModel.name == new_enterprise.name,
                                                  EnterPriseModel.status != -1)
@@ -49,22 +48,19 @@ class EnterPriseServer(BaseServer):
         # async with self.db.begin():
         await self.check_enterprise(new_enterprise)
 
-        try:
-            # _new_enterprise = EnterPriseModel(create_user_id=self.request.user, **new_enterprise.dict())
-            # self.db.add(_new_enterprise)
-            insert_stmt = insert(EnterPriseModel).values(create_user_id=self.request.user, **new_enterprise.dict())
-            result: CursorResult = await self.db.execute(insert_stmt)
-            if result.is_insert:
-                await self.db.commit()
-            else:
-                raise HTTPException(status=ErrEnum.Common.NETWORK_ERR, message="网络异常")
-            select_stmt = select(EnterPriseModel).where(EnterPriseModel.id == result.lastrowid)
-            result: ChunkedIteratorResult = await self.db.execute(select_stmt)
-            _new_enterprise = result.scalars().first()
+        # _new_enterprise = EnterPriseModel(create_user_id=self.request.user, **new_enterprise.dict())
+        # self.db.add(_new_enterprise)
+        insert_stmt = insert(EnterPriseModel).values(create_user_id=self.request.user, **new_enterprise.dict())
+        result: CursorResult = await self.db.execute(insert_stmt)
+        if not result.is_insert:
+            raise Exception("create err")
+        await self.db.commit()
 
-            return _new_enterprise
-        except Exception as err:
-            raise HTTPException(status=ErrEnum.Common.NETWORK_ERR, message="网络异常", data=str(err))
+        select_stmt = select(EnterPriseModel).where(EnterPriseModel.id == result.lastrowid)
+        result: ChunkedIteratorResult = await self.db.execute(select_stmt)
+        _new_enterprise = result.scalars().first()
+
+        return _new_enterprise
 
     async def get_enterprise_list(self, key: str, page_index: int, page_size: int):
         """
@@ -74,9 +70,8 @@ class EnterPriseServer(BaseServer):
         @param page_size: 分页大小
         """
 
-        stmt = select(func.count(EnterPriseModel.id)).where(EnterPriseModel.status != -1, ).where(
-            or_(EnterPriseModel.code == key,
-                EnterPriseModel.name.like(f"%{key}%")))
+        stmt = select(func.count(EnterPriseModel.id)).where(EnterPriseModel.status != -1, ) \
+            .where(or_(EnterPriseModel.code == key, EnterPriseModel.name.like(f"%{key}%")))
 
         result: ChunkedIteratorResult = await self.db.execute(stmt)
         total = result.scalars().first()
@@ -116,9 +111,9 @@ class EnterPriseServer(BaseServer):
 
         async with self.db.begin():
             params: dict = new_enterprise_details.dict(exclude={"enterprise_id"})
-            _new_enterprise_details = {k: v for k, v in params.items() if v}
+            _params = {k: v for k, v in params.items() if v}
             stmt = update(EnterPriseModel).where(EnterPriseModel.id == new_enterprise_details.enterprise_id)
-            result: CursorResult = await self.db.execute(stmt, _new_enterprise_details)
+            result: CursorResult = await self.db.execute(stmt, _params)
 
             if result.rowcount == 1:
                 await self.db.commit()
