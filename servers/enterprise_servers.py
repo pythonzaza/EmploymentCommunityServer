@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from sqlalchemy import insert, update, select, or_, func
 from sqlalchemy.engine.result import ChunkedIteratorResult
 from sqlalchemy.engine.cursor import CursorResult
@@ -121,7 +122,8 @@ class EnterPriseServer(BaseServer):
             if not _params:
                 raise HTTPException(status=ErrEnum.Common.PARAMS_ERR, message="无数据变动")
 
-            stmt = update(EnterpriseModel).where(EnterpriseModel.id == new_enterprise_details.enterprise_id)
+            stmt = update(EnterpriseModel).where(EnterpriseModel.id == new_enterprise_details.enterprise_id) \
+                .values(update_time=datetime.now())
             result: CursorResult = await self.db.execute(stmt, _params)
 
             if result.rowcount != 1:
