@@ -1,3 +1,12 @@
+import json
+from sqlalchemy import insert, update, select, or_, func
+from sqlalchemy.engine.result import ChunkedIteratorResult
+from sqlalchemy.engine.cursor import CursorResult
+from sqlalchemy.orm import selectinload
+
+from common.err import HTTPException, ErrEnum
+from schema_models.enterprise_models import CreateEnterPriseModel, UpdateEnterPriseModel
+from models.enterprise_models import EnterpriseModel, EnterpriseLog
 from servers.base_server import BaseServer
 from sqlalchemy import insert, update, select, or_, func
 from sqlalchemy.engine.result import ChunkedIteratorResult
@@ -110,6 +119,10 @@ class EnterPriseServer(BaseServer):
         """
 
         async with self.db.begin():
+
+            enterprise: EnterpriseModel = await self.get_enterprise_by_id(new_enterprise_details.enterprise_id)
+
+            # 修改数据
             params: dict = new_enterprise_details.dict(exclude={"enterprise_id"})
             _params = {k: v for k, v in params.items() if v}
             stmt = update(EnterPriseModel).where(EnterPriseModel.id == new_enterprise_details.enterprise_id)
@@ -120,3 +133,16 @@ class EnterPriseServer(BaseServer):
             else:
                 # await self.db.rollback()
                 raise HTTPException(status=ErrEnum.EnterPrise.ENTERPRISE_NOT_EXIST, message="企业不存在")
+
+            # 写修改日志
+            insert_stmt = insert(EnterpriseLog).values(user_id=self.request.user) \
+                .values(enterprise_id=new_enterprise_details.enterprise_id) \
+                .values(data=json.dumps(_params, ensure_ascii=False))
+            result: CursorResult = await self.db.execute(insert_stmt)
+
+            if result.rowcount != 1:
+                raise HTTPException(status=ErrEnum.EnterPrise.CREATE_LOG_ERR, message="日志添加失败")
+
+            await self.db.commit()
+
+        return True
