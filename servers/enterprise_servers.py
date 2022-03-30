@@ -119,9 +119,8 @@ class EnterPriseServer(BaseServer):
             _params = {k: v for k, v in params.items() if v and v != getattr(enterprise, k)}
 
             if not _params:
-                raise HTTPException(status=ErrEnum.Common.PARAMS_ERR, message="参数异常")
+                raise HTTPException(status=ErrEnum.Common.PARAMS_ERR, message="无数据变动")
 
-            # 修改数据
             stmt = update(EnterpriseModel).where(EnterpriseModel.id == new_enterprise_details.enterprise_id)
             result: CursorResult = await self.db.execute(stmt, _params)
 
