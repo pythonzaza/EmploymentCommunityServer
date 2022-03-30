@@ -8,14 +8,6 @@ from common.err import HTTPException, ErrEnum
 from schema_models.enterprise_models import CreateEnterPriseModel, UpdateEnterPriseModel
 from models.enterprise_models import EnterpriseModel, EnterpriseLog
 from servers.base_server import BaseServer
-from sqlalchemy import insert, update, select, or_, func
-from sqlalchemy.engine.result import ChunkedIteratorResult
-from sqlalchemy.engine.cursor import CursorResult
-from sqlalchemy.orm import selectinload
-
-from common.err import HTTPException, ErrEnum
-from schema_models.enterprise_models import CreateEnterPriseModel, UpdateEnterPriseModel
-from models.enterprise_models import EnterPriseModel
 
 
 class EnterPriseServer(BaseServer):
@@ -25,11 +17,11 @@ class EnterPriseServer(BaseServer):
         检查企业是否存在
         """
         if new_enterprise.code is not None:
-            stmt = select(EnterPriseModel).where(EnterPriseModel.status != -1) \
-                .where(or_(EnterPriseModel.name == new_enterprise.name, EnterPriseModel.code == new_enterprise.code))
+            stmt = select(EnterpriseModel).where(EnterpriseModel.status != -1) \
+                .where(or_(EnterpriseModel.name == new_enterprise.name, EnterpriseModel.code == new_enterprise.code))
         else:
-            stmt = select(EnterPriseModel).where(EnterPriseModel.name == new_enterprise.name,
-                                                 EnterPriseModel.status != -1)
+            stmt = select(EnterpriseModel).where(EnterpriseModel.name == new_enterprise.name,
+                                                 EnterpriseModel.status != -1)
 
         result: ChunkedIteratorResult = await self.db.execute(stmt)
 
@@ -42,7 +34,7 @@ class EnterPriseServer(BaseServer):
         检查企业是否存在
         """
 
-        stmt = select(EnterPriseModel).where(EnterPriseModel.id == enterprise_id, EnterPriseModel.status != -1)
+        stmt = select(EnterpriseModel).where(EnterpriseModel.id == enterprise_id, EnterpriseModel.status != -1)
 
         result: ChunkedIteratorResult = await self.db.execute(stmt)
 
@@ -50,7 +42,7 @@ class EnterPriseServer(BaseServer):
         if not enterprise:
             raise HTTPException(status=ErrEnum.EnterPrise.ENTERPRISE_NOT_EXIST, message="企业不存在")
 
-    async def create_enterprise(self, new_enterprise: CreateEnterPriseModel) -> EnterPriseModel:
+    async def create_enterprise(self, new_enterprise: CreateEnterPriseModel) -> EnterpriseModel:
         """
         创建新企业
         """
@@ -59,13 +51,13 @@ class EnterPriseServer(BaseServer):
 
         # _new_enterprise = EnterPriseModel(create_user_id=self.request.user, **new_enterprise.dict())
         # self.db.add(_new_enterprise)
-        insert_stmt = insert(EnterPriseModel).values(create_user_id=self.request.user, **new_enterprise.dict())
+        insert_stmt = insert(EnterpriseModel).values(create_user_id=self.request.user, **new_enterprise.dict())
         result: CursorResult = await self.db.execute(insert_stmt)
         if not result.is_insert:
             raise Exception("create err")
         await self.db.commit()
 
-        select_stmt = select(EnterPriseModel).where(EnterPriseModel.id == result.lastrowid)
+        select_stmt = select(EnterpriseModel).where(EnterpriseModel.id == result.lastrowid)
         result: ChunkedIteratorResult = await self.db.execute(select_stmt)
         _new_enterprise = result.scalars().first()
 
@@ -79,8 +71,8 @@ class EnterPriseServer(BaseServer):
         @param page_size: 分页大小
         """
 
-        stmt = select(func.count(EnterPriseModel.id)).where(EnterPriseModel.status != -1, ) \
-            .where(or_(EnterPriseModel.code == key, EnterPriseModel.name.like(f"%{key}%")))
+        stmt = select(func.count(EnterpriseModel.id)).where(EnterpriseModel.status != -1, ) \
+            .where(or_(EnterpriseModel.code == key, EnterpriseModel.name.like(f"%{key}%")))
 
         result: ChunkedIteratorResult = await self.db.execute(stmt)
         total = result.scalars().first()
@@ -90,20 +82,20 @@ class EnterPriseServer(BaseServer):
         if offset > total:
             return HTTPException(status=ErrEnum.Common.INDEX_ERR, message="请求参数异常")
 
-        stmt = select(EnterPriseModel).where(EnterPriseModel.status != -1, ).where(
-            or_(EnterPriseModel.code == key, EnterPriseModel.name.like(f"%{key}%"))).limit(page_size).offset(offset)
+        stmt = select(EnterpriseModel).where(EnterpriseModel.status != -1, ).where(
+            or_(EnterpriseModel.code == key, EnterpriseModel.name.like(f"%{key}%"))).limit(page_size).offset(offset)
 
         result: ChunkedIteratorResult = await self.db.execute(stmt)
         enterprise_list = result.scalars().fetchall()
         return enterprise_list, total
 
-    async def get_enterprise_by_id(self, enterprise_id: int) -> EnterPriseModel:
+    async def get_enterprise_by_id(self, enterprise_id: int) -> EnterpriseModel:
         """
-        根据code精确查询或根据名字模糊查询企业列表
+        根据id查询企业信息
         @param enterprise_id: 企业id
         """
 
-        stmt = select(EnterPriseModel).where(or_(EnterPriseModel.id == enterprise_id), EnterPriseModel.status != -1, )
+        stmt = select(EnterpriseModel).where(or_(EnterpriseModel.id == enterprise_id), EnterpriseModel.status != -1, )
         result: ChunkedIteratorResult = await self.db.execute(stmt)
         enterprise_details = result.scalars().first()
 
@@ -124,14 +116,16 @@ class EnterPriseServer(BaseServer):
 
             # 修改数据
             params: dict = new_enterprise_details.dict(exclude={"enterprise_id"})
-            _params = {k: v for k, v in params.items() if v}
-            stmt = update(EnterPriseModel).where(EnterPriseModel.id == new_enterprise_details.enterprise_id)
+            _params = {k: v for k, v in params.items() if v and v != getattr(enterprise, k)}
+
+            if not _params:
+                raise HTTPException(status=ErrEnum.Common.PARAMS_ERR, message="参数异常")
+
+            # 修改数据
+            stmt = update(EnterpriseModel).where(EnterpriseModel.id == new_enterprise_details.enterprise_id)
             result: CursorResult = await self.db.execute(stmt, _params)
 
-            if result.rowcount == 1:
-                await self.db.commit()
-            else:
-                # await self.db.rollback()
+            if result.rowcount != 1:
                 raise HTTPException(status=ErrEnum.EnterPrise.ENTERPRISE_NOT_EXIST, message="企业不存在")
 
             # 写修改日志
