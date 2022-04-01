@@ -2,7 +2,6 @@ from fastapi import FastAPI, Request, Depends
 from fastapi.responses import JSONResponse
 from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
-from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 
 from controller.common_controller import common_router
@@ -20,9 +19,6 @@ from middleware.exception_handler_middleware import ExceptionMiddleware
 from configs import AppConfig
 
 app = FastAPI(title='EmploymentCommunity')
-
-# swagger身份验证器
-OAuth2 = HTTPBearer()
 
 # 跨域支持
 app.add_middleware(
