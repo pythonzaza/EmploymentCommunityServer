@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from configs import AppConfig
 
@@ -13,7 +14,7 @@ if AppConfig.get("debug"):
     logger.setLevel(logging.DEBUG)
     hd.setFormatter(formatter)
 else:
-    # hd = logging.FileHandler(f'{__name__}.log', 'a', encoding='utf-8')
+    hd = logging.FileHandler(f"./log/{datetime.now().strftime('%Y-%m-%d')}.log", 'a', encoding='utf-8')
     logger.setLevel(logging.INFO)
     hd.setFormatter(formatter)
 
