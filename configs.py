@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.pool import AsyncAdaptedQueuePool
 from pydantic import BaseSettings, Field
 
 
@@ -71,6 +72,7 @@ if not BaseConfig.DATABASE_URL:
 
 data_base_echo = AppConfig["debug"]
 
-async_engine = create_async_engine(BaseConfig.DATABASE_URL, echo=data_base_echo, future=True)
+async_engine = create_async_engine(BaseConfig.DATABASE_URL, echo=data_base_echo, future=True, echo_pool=True,
+                                   poolclass=AsyncAdaptedQueuePool)
 
 __all__ = ["EncryptConfig", "RedisConfig", "AppConfig", "async_engine"]
