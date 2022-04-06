@@ -12,13 +12,13 @@ Base = mapper_registry.generate_base()
 async_db_session = sessionmaker(async_engine, expire_on_commit=False, class_=AsyncSession)
 
 
-# async def get_async_db() -> AsyncSession:
-#     async with async_db_session() as db_session:
-#         return db_session
-
-async def get_async_db() -> AsyncGenerator:
+async def get_async_db() -> AsyncSession:
     async with async_db_session() as db_session:
-        yield db_session
+        return db_session
+
+# async def get_async_db() -> AsyncGenerator:
+#     async with async_db_session() as db_session:
+#         yield db_session
 
 
 async def get_async_redis_session() -> Redis:

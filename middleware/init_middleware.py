@@ -15,8 +15,8 @@ class InitMiddleware(BaseHTTPMiddleware):
         super().__init__(app, dispatch)
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
-        # request.state.db = await get_async_db()
-        request.state.db = await get_async_db().asend(None)
+        request.state.db = await get_async_db()
+        # request.state.db = await get_async_db().asend(None)
         request.state.redis = await get_async_redis_session()
         response = await call_next(request)
         await request.state.db.close()
