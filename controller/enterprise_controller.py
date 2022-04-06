@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Request, Query, Depends
 
-from common.err import HTTPException
 from common.depends import jwt_auth
 from schema_models.base_model import RespModel
 from schema_models.enterprise_models import (CreateEnterPriseModel, EnterPriseDetailsModel, EnterPriseListModel,
-                                             UpdateEnterPriseModel,EnterPriseModelDetails)
+                                             UpdateEnterPriseModel)
 from servers.enterprise_servers import EnterPriseServer
 
 enterprise_router = APIRouter()
@@ -21,7 +20,7 @@ async def create_enter_prise(request: Request, new_enterprise: CreateEnterPriseM
     return new_enterprise_out_model
 
 
-@enterprise_router.get("/enterprise/list", response_model=EnterPriseListModel, name="获取企业列表")
+@enterprise_router.get("/list", response_model=EnterPriseListModel, name="获取企业列表")
 async def enter_prise_list(request: Request, key: str = Query("", description="关键字,名称或信用码"),
                            page_index: int = Query(1, description="页码", ge=0),
                            page_size: int = Query(10, description="分页大小", ge=0, le=30)):
@@ -34,7 +33,7 @@ async def enter_prise_list(request: Request, key: str = Query("", description="�
     return EnterPriseListModel(data=enterprise_list, total=total)
 
 
-@enterprise_router.get("/enterprise/details", response_model=EnterPriseDetailsModel, name="获取企业详情")
+@enterprise_router.get("/details", response_model=EnterPriseDetailsModel, name="获取企业详情")
 async def enter_prise_list(request: Request, enterprise_id: int = Query(1, description="企业id", ge=0)):
     """
     获取企业详情
