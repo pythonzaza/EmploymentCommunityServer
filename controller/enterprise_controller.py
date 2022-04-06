@@ -43,7 +43,7 @@ async def enter_prise_list(request: Request, enterprise_id: int = Query(1, descr
     return EnterPriseDetailsModel(data=enterprise_details)
 
 
-@enterprise_router.post("/update", response_model=RespModel, name="修改企业资料")
+@enterprise_router.patch("/update", response_model=RespModel, name="修改企业资料")
 async def create_enter_prise(request: Request, new_enterprise: UpdateEnterPriseModel, _=Depends(jwt_auth)):
     """
     ## 创建公司信息
