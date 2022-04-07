@@ -42,28 +42,31 @@ class MessageBoardServer(BaseServer):
 
         """
         enterprise_server = EnterPriseServer(self.request)
-        await enterprise_server.check_enterprise_by_id(new_message.enterprise_id)
 
-        user_server = UserServer(self.request)
-        user = await user_server.get_user_by_id(self.request.user)
+        async with self.db.begin():
 
-        new_message_dict = new_message.dict()
-        new_message_dict["user_id"] = user.id
-        new_message_dict["user_name"] = user.name
+            await enterprise_server.check_enterprise_by_id(new_message.enterprise_id)
 
-        if new_message.reply_message_id:
-            _reply_message = await self.check_message(new_message.enterprise_id, new_message.reply_message_id)
-            new_message_dict["reply_user_id"] = _reply_message.user_id
-            new_message_dict["reply_user_name"] = _reply_message.user_name
+            user_server = UserServer(self.request)
+            user = await user_server.get_user_by_id(self.request.user)
 
-        stmt = insert(MessageBoardModel).values(**new_message_dict)
-        result: CursorResult = await self.db.execute(stmt)
-        if not result.is_insert:
-            raise
+            new_message_dict = new_message.dict()
+            new_message_dict["user_id"] = user.id
+            new_message_dict["user_name"] = user.name
 
-        await enterprise_server.message_autoincrement(new_message.enterprise_id)
+            if new_message.reply_message_id:
+                _reply_message = await self.check_message(new_message.enterprise_id, new_message.reply_message_id)
+                new_message_dict["reply_user_id"] = _reply_message.user_id
+                new_message_dict["reply_user_name"] = _reply_message.user_name
 
-        await self.db.commit()
+            stmt = insert(MessageBoardModel).values(**new_message_dict)
+            result: CursorResult = await self.db.execute(stmt)
+            if not result.is_insert:
+                raise
+
+            await enterprise_server.message_autoincrement(new_message.enterprise_id)
+
+            await self.db.commit()
         return result.lastrowid
 
     async def get_message(self, enterprise_id: int, page: int = 0, size: int = 10):
