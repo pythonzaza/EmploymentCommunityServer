@@ -141,3 +141,10 @@ class EnterPriseServer(BaseServer):
             await self.db.commit()
 
         return True
+
+    async def message_autoincrement(self, enterprise_id):
+        stmt = update(EnterpriseModel).where(EnterpriseModel.id == enterprise_id) \
+            .values(message_count=EnterpriseModel.message_count + 1)
+        result: CursorResult = await self.db.execute(stmt)
+        if result.rowcount != 1:
+            raise

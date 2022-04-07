@@ -17,7 +17,8 @@ class EnterpriseModel(Base):
     TYX_url: str = Column(String, default="")  # 天眼查中的公司链接
     create_time: datetime = Column(DATETIME, default=func.now())  # 创建时间
     create_user_id: int = Column(Integer, default=None)
-    update_time: datetime = Column(DATETIME, default=func.now())  # 更新时间
+    update_time: datetime = Column(DATETIME, default=func.now())  # 资料更新时间
+    message_count: int = Column(Integer, default=0)  # 留言数量
     status: int = Column(Integer, default=1)  # 状态, 1正常, -1删除
 
 

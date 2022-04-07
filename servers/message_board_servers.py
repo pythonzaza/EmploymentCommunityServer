@@ -58,8 +58,12 @@ class MessageBoardServer(BaseServer):
 
         stmt = insert(MessageBoardModel).values(**new_message_dict)
         result: CursorResult = await self.db.execute(stmt)
-        if result.is_insert:
-            await self.db.commit()
+        if not result.is_insert:
+            raise
+
+        await enterprise_server.message_autoincrement(new_message.enterprise_id)
+
+        await self.db.commit()
         return result.lastrowid
 
     async def get_message(self, enterprise_id: int, page: int = 0, size: int = 10):
