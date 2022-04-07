@@ -30,7 +30,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
                 content={
                     "status": ErrEnum.Common.INTEGRITY_ERR,
                     "message": "新数据已存在",
-                    "data": str(err) if AppConfig['debug'] else ""
+                    "data": str(err) if AppConfig.debug else ""
                 }
             )
 
@@ -40,6 +40,6 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
                 content={
                     "status": ErrEnum.NETWORK.NETWORK_ERR,
                     "message": "系统异常",
-                    "data": str(err) if AppConfig['debug'] else ""
+                    "data": str(err) if AppConfig.debug else ""
                 }
             )

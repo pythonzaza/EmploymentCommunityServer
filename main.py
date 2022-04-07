@@ -46,7 +46,7 @@ async def unicorn_exception_handler(request: Request, err: HTTPException):
         content={
             "message": err.message,
             "status": err.status,
-            "data": str(err.data) if AppConfig['debug'] else "",
+            "data": str(err.data) if AppConfig.debug else "",
         },
     )
 
@@ -77,4 +77,4 @@ app.include_router(message_board_router, prefix='/messageBoard', tags=["留言�
 if __name__ == '__main__':
     import uvicorn
 
-    uvicorn.run(**AppConfig)
+    uvicorn.run(**AppConfig.dict())

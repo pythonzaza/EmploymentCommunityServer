@@ -10,7 +10,7 @@ formatter = logging.Formatter(
 
 hd = logging.StreamHandler()
 
-if AppConfig.get("debug"):
+if AppConfig.debug:
     logger.setLevel(logging.DEBUG)
     hd.setFormatter(formatter)
 else:

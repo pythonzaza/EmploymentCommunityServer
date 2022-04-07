@@ -34,6 +34,10 @@ class BaseConfig(BaseSetting):
     DATABASE_URL: str
     CHARSET: str = "UTF8MB4"
 
+    ECHO = False
+    ECHO_POOL: bool = False
+    MAX_OVERFLOW: int = 20
+
     class Config:
         env_prefix = "DATABASE_"
 
@@ -64,15 +68,15 @@ class AppConfig(BaseSetting):
 EncryptConfig = EncryptConfig()
 BaseConfig = BaseConfig()
 RedisConfig = RedisConfig()
-AppConfig = AppConfig().dict()
+AppConfig = AppConfig()
 
 if not BaseConfig.DATABASE_URL:
     BaseConfig.DATABASE_URL = f"mysql+aiomysql://{BaseConfig.USER}:{BaseConfig.PASSWORD}@" \
                               f"{BaseConfig.HOST}:{BaseConfig.PORT}/{BaseConfig.DATABASE}?charset={BaseConfig.CHARSET}"
 
-data_base_echo = AppConfig["debug"]
 
-async_engine = create_async_engine(BaseConfig.DATABASE_URL, echo=data_base_echo, future=True, echo_pool=True,
+async_engine = create_async_engine(BaseConfig.DATABASE_URL, echo=BaseConfig.ECHO, future=True,
+                                   echo_pool=BaseConfig.ECHO_POOL, max_overflow=BaseConfig.MAX_OVERFLOW,
                                    poolclass=AsyncAdaptedQueuePool)
 
 __all__ = ["EncryptConfig", "RedisConfig", "AppConfig", "async_engine"]
