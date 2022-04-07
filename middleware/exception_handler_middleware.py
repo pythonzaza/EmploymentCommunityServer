@@ -25,7 +25,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
             raise err
 
         except IntegrityError as err:
-            logger.error(str(err))
+            logger.error(f"request_id:{request.state.request_id}=>{err}")
             return JSONResponse(
                 content={
                     "status": ErrEnum.Common.INTEGRITY_ERR,
@@ -35,7 +35,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
             )
 
         except Exception as err:
-            logger.error(str(err))
+            logger.error(f"request_id:{request.state.request_id}=>{err}")
             return JSONResponse(
                 content={
                     "status": ErrEnum.NETWORK.NETWORK_ERR,

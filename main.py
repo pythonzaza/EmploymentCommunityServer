@@ -10,7 +10,7 @@ from controller.message_board_controller import message_board_router
 
 from schema_models.base_model import RespModel422
 from common.err import HTTPException, ErrEnum
-
+from common.logger import logger
 from middleware.init_middleware import InitMiddleware
 from middleware.throttle_middleware import ThrottleMiddleware
 from middleware.exception_handler_middleware import ExceptionMiddleware
@@ -42,6 +42,8 @@ async def unicorn_exception_handler(request: Request, err: HTTPException):
     :param err:
     :return:
     """
+    logger.error(f"request_id:{request.state.request_id}=>{err.data}")
+
     return JSONResponse(
         content={
             "message": err.message,
@@ -58,6 +60,8 @@ async def validation_exception_handler(request, exc):
 
     error = exc.errors()[0]
     message = f'{".".join(error.get("loc"))} : {error.get("msg")};'
+
+    logger.error(f"request_id:{request.state.request_id}=>{message}")
 
     return JSONResponse(
         content={
