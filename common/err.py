@@ -21,6 +21,10 @@ class ValidationException(RequestValidationError):
 
 
 class ErrEnum:
+    class NETWORK(IntEnum):
+        NETWORK_ERR = 500  # 网络繁忙
+        PARAMS_VALIDATION_ERR = 422  # 参数格式校验异常
+
     class Common(IntEnum):
         NETWORK_ERR = 10000  # 网络繁忙
         DB_ERR = 10002  # 数据库异常

@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request, Depends
 from fastapi.responses import JSONResponse
-from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,7 +17,7 @@ from middleware.exception_handler_middleware import ExceptionMiddleware
 
 from configs import AppConfig
 
-app = FastAPI(title='EmploymentCommunity')
+app = FastAPI(title='EmploymentCommunity', responses={422: {"model": RespModel422}})
 
 # 跨域支持
 app.add_middleware(
@@ -32,12 +31,6 @@ app.add_middleware(
 app.add_middleware(ThrottleMiddleware)
 app.add_middleware(InitMiddleware)
 app.add_middleware(ExceptionMiddleware)
-
-
-# @app.middleware('http')
-# async def get_db(request: Request, call_next, ):
-#     res = await call_next(request)
-#     return res
 
 
 # 注入全局异常类
@@ -69,17 +62,17 @@ async def validation_exception_handler(request, exc):
     return JSONResponse(
         content={
             "message": '数据格式异常',
-            "status": ErrEnum.Common.PARAMS_ERR,
+            "status": ErrEnum.NETWORK.PARAMS_VALIDATION_ERR,
             "data": message,
         },
     )
 
 
 # 路由配置
-app.include_router(common_router, prefix='/common', tags=["公共"], responses={422: {"model": RespModel422}})
+app.include_router(common_router, prefix='/common', tags=["公共"])
 # app.include_router(article_router, prefix='/article', tags=["Article"])
-app.include_router(enterprise_router, prefix='/enterprise', tags=["企业"], responses={422: {"model": RespModel422}})
-app.include_router(message_board_router, prefix='/messageBoard', tags=["留言板"], responses={422: {"model": RespModel422}})
+app.include_router(enterprise_router, prefix='/enterprise', tags=["企业"] )
+app.include_router(message_board_router, prefix='/messageBoard', tags=["留言板"])
 
 if __name__ == '__main__':
     import uvicorn

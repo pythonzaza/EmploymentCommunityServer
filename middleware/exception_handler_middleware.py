@@ -38,7 +38,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
             logger.error(str(err))
             return JSONResponse(
                 content={
-                    "status": ErrEnum.Common.NETWORK_ERR,
+                    "status": ErrEnum.NETWORK.NETWORK_ERR,
                     "message": "系统异常",
                     "data": str(err) if AppConfig['debug'] else ""
                 }
