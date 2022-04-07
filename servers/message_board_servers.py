@@ -69,7 +69,7 @@ class MessageBoardServer(BaseServer):
 
         offset = (page - 1) * size
 
-        if offset >= total:
+        if offset > total:
             raise HTTPException(status=ErrEnum.Common.INDEX_ERR, message="分页数据异常")
 
         stmt = select(MessageBoardModel).where(MessageBoardModel.enterprise_id == enterprise_id) \
