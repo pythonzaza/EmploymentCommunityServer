@@ -24,6 +24,7 @@ class EnterPriseModelDetails(CreateEnterPriseModel):
     id: int = Field(0, description="公司id")
     create_time: datetime = Field(..., description="创建时间")
     update_time: datetime = Field(..., description="创建时间")
+    message_count: int = Field(..., description="留言总次数")
 
     class Config:
         orm_mode = True

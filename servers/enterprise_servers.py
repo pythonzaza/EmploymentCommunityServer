@@ -4,6 +4,7 @@ from sqlalchemy import insert, update, select, or_, func
 from sqlalchemy.engine.result import ChunkedIteratorResult
 from sqlalchemy.engine.cursor import CursorResult
 from sqlalchemy.orm import selectinload
+from sqlalchemy import desc
 
 from common.err import HTTPException, ErrEnum
 from schema_models.enterprise_models import CreateEnterPriseModel, UpdateEnterPriseModel
@@ -84,7 +85,8 @@ class EnterPriseServer(BaseServer):
             return HTTPException(status=ErrEnum.Common.INDEX_ERR, message="请求参数异常")
 
         stmt = select(EnterpriseModel).where(EnterpriseModel.status != -1, ).where(
-            or_(EnterpriseModel.code == key, EnterpriseModel.name.like(f"%{key}%"))).limit(page_size).offset(offset)
+            or_(EnterpriseModel.code == key, EnterpriseModel.name.like(f"%{key}%"))).limit(page_size).offset(offset)\
+            .order_by(desc(EnterpriseModel.message_count))
 
         result: ChunkedIteratorResult = await self.db.execute(stmt)
         enterprise_list = result.scalars().fetchall()
