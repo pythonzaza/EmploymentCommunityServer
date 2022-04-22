@@ -1,6 +1,6 @@
 from typing import Optional, Union
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, DECIMAL, DATETIME
+from datetime import datetime, date
+from sqlalchemy import Column, Integer, String, DECIMAL, DATETIME, DATE
 from sqlalchemy import func
 
 from common.db import Base
@@ -15,6 +15,8 @@ class EnterpriseModel(Base):
     details: str = Column(String)  # 公司详情
     code: Optional[str] = Column(String, default=None)  # 公司统一社会信用码,可在天眼查查询
     TYX_url: str = Column(String, default="")  # 天眼查中的公司链接
+    create_date: date = Column(DATE, default=datetime.fromisoformat("1970-01-01"))  # 企业创建时间
+    register_capital: int = Column(DECIMAL, default=0)  # 注册资本, 单位:万
     create_time: datetime = Column(DATETIME, default=func.now())  # 创建时间
     create_user_id: int = Column(Integer, default=None)
     update_time: datetime = Column(DATETIME, default=func.now())  # 资料更新时间

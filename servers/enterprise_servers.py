@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from sqlalchemy import insert, update, select, or_, func
 from sqlalchemy.engine.result import ChunkedIteratorResult
@@ -7,6 +6,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy import desc
 
 from common.err import HTTPException, ErrEnum
+from common import json
 from schema_models.enterprise_models import CreateEnterPriseModel, UpdateEnterPriseModel
 from models.enterprise_models import EnterpriseModel, EnterpriseLog
 from servers.base_server import BaseServer
@@ -85,7 +85,7 @@ class EnterPriseServer(BaseServer):
             return HTTPException(status=ErrEnum.Common.INDEX_ERR, message="请求参数异常")
 
         stmt = select(EnterpriseModel).where(EnterpriseModel.status != -1, ).where(
-            or_(EnterpriseModel.code == key, EnterpriseModel.name.like(f"%{key}%"))).limit(page_size).offset(offset)\
+            or_(EnterpriseModel.code == key, EnterpriseModel.name.like(f"%{key}%"))).limit(page_size).offset(offset) \
             .order_by(desc(EnterpriseModel.message_count))
 
         result: ChunkedIteratorResult = await self.db.execute(stmt)
@@ -118,7 +118,7 @@ class EnterPriseServer(BaseServer):
             enterprise: EnterpriseModel = await self.get_enterprise_by_id(new_enterprise_details.enterprise_id)
 
             # 修改数据
-            params: dict = new_enterprise_details.dict(exclude={"enterprise_id"})
+            params: dict = new_enterprise_details.dict(exclude={"enterprise_id"}, exclude_none=True)
             _params = {k: v for k, v in params.items() if v and v != getattr(enterprise, k)}
 
             if not _params:
@@ -134,7 +134,7 @@ class EnterPriseServer(BaseServer):
             # 写修改日志
             insert_stmt = insert(EnterpriseLog).values(user_id=self.request.user) \
                 .values(enterprise_id=new_enterprise_details.enterprise_id) \
-                .values(data=json.dumps(_params, ensure_ascii=False))
+                .values(data=await json.dumps(_params, ensure_ascii=False))
             result: CursorResult = await self.db.execute(insert_stmt)
 
             if result.rowcount != 1:

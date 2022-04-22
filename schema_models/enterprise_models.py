@@ -1,18 +1,31 @@
-from pydantic import BaseModel, Field
-from datetime import datetime
-from typing import List, Optional
+from pydantic import BaseModel, Field, root_validator
+from datetime import datetime, date, timedelta
+from typing import List, Optional, Any
 from fastapi import Query
 
 from schema_models.base_model import RespModel
 
 
 class CreateEnterPriseModel(BaseModel):
+    """  `create_date` date DEFAULT NULL COMMENT '企业创建时间',
+  `register_capital` int DEFAULT NULL COMMENT '注册资本, 单位:万',"""
     name: str = Field(..., description="公司名称", min_length=4, max_length=30)
     legal_person: Optional[str] = Field(None, description="公司法人", min_length=2, max_length=30)
     address: str = Field("", description="公司地址", max_length=30)
     details: str = Field("", description="公司详情", max_length=1000)
     code: Optional[str] = Field(None, description="公司统一社会信用码,可在天眼查查询,未填写时请输入null或省略该字段", max_length=30)
     TYX_url: str = Field("", description="天眼查中的公司链接")
+    create_date: date = Field(date.fromisoformat("1970-01-01"), description="企业创建时间")
+    register_capital: int = Field(0, ge=0, description="注册资本, 单位:万")
+
+    @root_validator
+    def check_create_date(cls, values: dict):
+        """
+        检查企业创建时间
+        """
+        if values.get("create_date") and values.get("create_date") > datetime.now().date():
+            raise ValueError("create_date不能大于今天")
+        return values
 
 
 class UpdateEnterPriseModel(CreateEnterPriseModel):
@@ -39,7 +52,7 @@ class EnterPriseModelList(EnterPriseModelDetails):
                             exclude_unset=exclude_unset, exclude_defaults=exclude_defaults, exclude_none=exclude_none)
 
     class Config:
-        exclude = {"details"}
+        exclude = {"details", "create_date", "register_capital", "TYX_url"}
 
 
 class EnterPriseDetailsModel(RespModel):
