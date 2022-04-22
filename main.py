@@ -1,7 +1,9 @@
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi import FastAPI, Request, Depends
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Union
 
 from controller.common_controller import common_router
 from controller.article_controller import article_router
@@ -31,6 +33,35 @@ app.add_middleware(
 app.add_middleware(ThrottleMiddleware)
 app.add_middleware(InitMiddleware)
 app.add_middleware(ExceptionMiddleware)
+
+
+# 注入全局异常类
+@app.exception_handler(StarletteHTTPException)
+async def unicorn_exception_handler(request: Request, err: Union[HTTPException, StarletteHTTPException]):
+    """
+    注入全局异常类
+    :param request:
+    :param err:
+    :return:
+    """
+    logger.error(f"request_id:{request.state.request_id}=>{err}")
+
+    if isinstance(err, HTTPException):
+        return JSONResponse(
+            content={
+                "message": err.message,
+                "status": err.status,
+                "data": str(err) if AppConfig.debug else "",
+            },
+        )
+    else:
+        return JSONResponse(
+            content={
+                "message": err.detail,
+                "status": err.status_code,
+                "data": str(err) if AppConfig.debug else "",
+            },
+        )
 
 
 # 注入全局异常类
@@ -75,7 +106,7 @@ async def validation_exception_handler(request, exc):
 # 路由配置
 app.include_router(common_router, prefix='/common', tags=["公共"])
 # app.include_router(article_router, prefix='/article', tags=["Article"])
-app.include_router(enterprise_router, prefix='/enterprise', tags=["企业"] )
+app.include_router(enterprise_router, prefix='/enterprise', tags=["企业"])
 app.include_router(message_board_router, prefix='/messageBoard', tags=["留言板"])
 
 if __name__ == '__main__':
