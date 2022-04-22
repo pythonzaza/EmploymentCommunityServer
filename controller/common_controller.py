@@ -35,7 +35,7 @@ async def login(request: Request, login_user: UserLoginIn, platform: str = Depen
     """
     ## 登录
     """
-    user = UserServer(request)
-    login_user = await user.login(login_user, platform)
+    user_server = UserServer(request)
+    login_user = await user_server.login(login_user, platform)
     # data = UserInfoOutData.from_orm(login_user)
     return UserInfoOut(data=login_user)

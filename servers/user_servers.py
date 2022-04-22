@@ -1,6 +1,8 @@
 from sqlalchemy.future import Select
 from sqlalchemy.engine.result import ChunkedIteratorResult
-from sqlalchemy import select, insert, or_, and_
+from sqlalchemy.engine.cursor import CursorResult
+from sqlalchemy import select, insert, or_, update
+from sqlalchemy.sql.expression import Insert, Update
 from datetime import datetime
 
 from configs import EncryptConfig
@@ -8,10 +10,11 @@ from common.err import HTTPException, ErrEnum
 from common.encrypt import Encrypt
 from common.jwt import get_token_key
 from common.logger import logger
+from common.ip import query_ip
 from servers.base_server import BaseServer
 from schema_models.user_models import UserRegisterIn, UserLoginIn
-from schema_models.common_models import TokenData
-from models.user_models import UserModel
+from schema_models.common_models import TokenData, IpDetailsModel
+from models.user_models import UserModel, UserLoginLogModel
 
 
 class UserServer(BaseServer):
@@ -95,18 +98,24 @@ class UserServer(BaseServer):
             raise HTTPException(status=ErrEnum.User.ACCOUNT_OR_PWD_ERR, message="账号或密码错误")
         return user
 
-    async def login(self, login_user: UserLoginIn, platform: str):
+    async def login(self, login_user: UserLoginIn, platform: str) -> UserModel:
         """
         登录
         """
         login_user.password = await Encrypt.encrypt_password(login_user.password)
-        async with self.db.begin():
-            user = await self._find_user(login_user)
+        ip_details = await query_ip(self.request.client.host)
+
+        user = await self._find_user(login_user)
 
         if user.status == -1:
+            await self.write_login_log(user.id, ip_details, is_login=0, remark="账号已被禁用")
+
             raise HTTPException(status=ErrEnum.User.ACCOUNT_DISABLE, message="账号被禁用")
 
         new_token = await self.create_token(user=user, platform=platform)
+
+        await self.write_login_log(user.id, ip_details, is_login=1, remark="登录成功")
+
         user.token = new_token
         return user
 
@@ -121,3 +130,30 @@ class UserServer(BaseServer):
         if not user:
             raise HTTPException(status=ErrEnum.User.USER_NOT_EXIST, message="用户不存在")
         return user
+
+    async def write_login_log(self, user_id: int, ip_data: IpDetailsModel, is_login: int = 1, remark: str = None):
+        """
+        写用户登录日志
+        """
+        stmt: Insert = insert(UserLoginLogModel).values(user_id=user_id, login_ip=ip_data.ip, city=ip_data.city,
+                                                        coordinates=ip_data.coordinates, is_login=is_login,
+                                                        remark=remark)
+        result: CursorResult = await self.db.execute(stmt)
+        if result.is_insert:
+            await self.db.commit()
+            log_id = result.inserted_primary_key[0]
+            return log_id
+
+    # 更新登录日志
+    async def update_login_log(self, log_id: int, is_login: int, remark: str = None):
+        """
+        更新用户登录日志
+        city: str = Column(String)  # 城市,
+        coordinates: str = Column(String)  # 坐标
+        verify: str = Column(String)  # 验证
+        """
+        stmt: Update = update(UserLoginLogModel).where(UserLoginLogModel.id == log_id) \
+            .values(is_login=is_login, remark=remark)
+
+        res = await self.db.execute(stmt)
+        print(res)

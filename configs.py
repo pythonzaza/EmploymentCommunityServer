@@ -65,18 +65,30 @@ class AppConfig(BaseSetting):
         env_prefix = "APP_"
 
 
+class CommonConfigs(BaseSetting):
+    """
+    通用配置
+    """
+
+    # QUERY_IP_URL: str = "http://ip-api.com/batch?lang=zh-CN&fields=778461"
+    # QUERY_IP_URL: str = "http://ip-api.com/json/{}?lang=zh-CN&fields=13357277"
+
+    class Config:
+        env_prefix = "COMMON_"
+
+
 EncryptConfig = EncryptConfig()
 BaseConfig = BaseConfig()
 RedisConfig = RedisConfig()
 AppConfig = AppConfig()
+CommonConfigs = CommonConfigs()
 
 if not BaseConfig.DATABASE_URL:
     BaseConfig.DATABASE_URL = f"mysql+aiomysql://{BaseConfig.USER}:{BaseConfig.PASSWORD}@" \
                               f"{BaseConfig.HOST}:{BaseConfig.PORT}/{BaseConfig.DATABASE}?charset={BaseConfig.CHARSET}"
 
-
 async_engine = create_async_engine(BaseConfig.DATABASE_URL, echo=BaseConfig.ECHO, future=True,
                                    echo_pool=BaseConfig.ECHO_POOL, max_overflow=BaseConfig.MAX_OVERFLOW,
                                    poolclass=AsyncAdaptedQueuePool)
 
-__all__ = ["EncryptConfig", "RedisConfig", "AppConfig", "async_engine"]
+__all__ = ["EncryptConfig", "RedisConfig", "AppConfig", "async_engine", "CommonConfigs"]
