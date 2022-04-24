@@ -6,7 +6,7 @@ from starlette.responses import Response
 from starlette.types import ASGIApp
 
 from common.db import get_async_redis_session, get_async_db
-
+from common.logger import logger
 
 class InitMiddleware(BaseHTTPMiddleware):
     """
@@ -25,6 +25,8 @@ class InitMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         request.state.request_id = await self.create_request_id()
+        logger.info(f"request_id: {request.state.request_id}{request.url.path}")
+
         request.state.db = await get_async_db()
         # request.state.db = await get_async_db().asend(None)
         request.state.redis = await get_async_redis_session()

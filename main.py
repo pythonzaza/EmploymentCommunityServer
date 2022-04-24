@@ -44,24 +44,24 @@ async def unicorn_exception_handler(request: Request, err: Union[HTTPException, 
     :param err:
     :return:
     """
-    logger.error(f"request_id:{request.state.request_id}=>{err}")
 
     if isinstance(err, HTTPException):
-        return JSONResponse(
-            content={
-                "message": err.message,
-                "status": err.status,
-                "data": str(err) if AppConfig.debug else "",
-            },
-        )
+        content = {
+            "message": err.message,
+            "status": err.status,
+            "data": str(err) if AppConfig.debug else "",
+        }
+
     else:
-        return JSONResponse(
-            content={
-                "message": err.detail,
-                "status": err.status_code,
-                "data": str(err) if AppConfig.debug else "",
-            },
-        )
+        content = {
+            "message": err.detail,
+            "status": err.status_code,
+            "data": str(err) if AppConfig.debug else "",
+        }
+
+    logger.info(f"request_id:{request.state.request_id}=>{content}")
+
+    return JSONResponse(content=content)
 
 
 # 注入全局异常类
@@ -73,7 +73,7 @@ async def unicorn_exception_handler(request: Request, err: HTTPException):
     :param err:
     :return:
     """
-    logger.error(f"request_id:{request.state.request_id}=>{err.data}")
+    logger.info(f"request_id:{request.state.request_id}=>msg:{err.message}=>data:{err.data or 'null'}")
 
     return JSONResponse(
         content={
@@ -92,7 +92,7 @@ async def validation_exception_handler(request, exc):
     error = exc.errors()[0]
     message = f'{".".join(error.get("loc"))} : {error.get("msg")};'
 
-    logger.error(f"request_id:{request.state.request_id}=>{message}")
+    logger.info(f"request_id:{request.state.request_id}=>{message}")
 
     return JSONResponse(
         content={
