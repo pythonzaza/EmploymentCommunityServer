@@ -14,7 +14,7 @@ from common.logger import logger
 
 class ThrottleMiddleware(BaseHTTPMiddleware):
     """
-    获取数据库连接中间件
+    节流中间件
     """
 
     def __init__(self, app: ASGIApp, dispatch: DispatchFunction = None) -> None:

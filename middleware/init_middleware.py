@@ -8,9 +8,11 @@ from starlette.types import ASGIApp
 from common.db import get_async_redis_session, get_async_db
 from common.logger import logger
 
+
 class InitMiddleware(BaseHTTPMiddleware):
     """
-    获取数据库连接中间件
+    初始化中间件
+    获取数据库连接, redis连接, 生成请求id, 记录请求日志
     """
 
     def __init__(self, app: ASGIApp, dispatch: DispatchFunction = None) -> None:
