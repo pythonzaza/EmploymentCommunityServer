@@ -39,6 +39,9 @@ uvicorn main:app
 pip install "uvicorn[standard]" gunicorn
 ## 使用Gunicorn运行
 gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:80
+##or
+gunicorn main:app -c gunicorn_config.py
+
 ```
 
 #### 4. 配置文件
