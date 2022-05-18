@@ -10,5 +10,9 @@ class DateTimeEncoder(JSONEncoder):
             return obj.isoformat()
 
 
-async def dumps(obj, **kwargs):
+def dumps(obj, **kwargs):
+    """
+    Serialize ``obj`` to a JSON formatted ``str``.
+    主要解决datetime类型的序列化问题
+    """
     return json.dumps(obj, **kwargs, cls=DateTimeEncoder)
