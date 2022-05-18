@@ -21,7 +21,12 @@ async def get_token_key(user_id: int, platform: str) -> str:
 
 
 async def get_platform(platform: str = Header("web", description="平台")) -> str:
-    if platform.lower() not in ["web", "android", "ios"]:
+    """
+    从headers获取平台参数
+    :param platform: 平台
+    :return: str 平台
+    """
+    if platform := platform.lower() not in ["web", "android", "ios"]:
         HTTPException(status=ErrEnum.Common.TOKEN_ERR, message="不支持的platform")
     return platform
 
@@ -30,6 +35,11 @@ async def jwt_auth(request: Request, platform: str = Depends(get_platform),
                    token: HTTPAuthorizationCredentials = Depends(http_bearer)) -> int:
     """
     JWT认证
+    解析jwt, 并将用户信息挂载到request.state上
+    :param request: 请求对象
+    :param platform: 平台
+    :param token: token
+    :return: 用户id
     """
 
     http_exception = HTTPException(status=ErrEnum.Common.TOKEN_ERR, message="Token 验证失败")
