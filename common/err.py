@@ -34,6 +34,7 @@ class ErrEnum:
         THROTTLE_ERR = 10006  # 访问频率过高
         INDEX_ERR = 10007  # 索引越界异常
         INTEGRITY_ERR = 10008  # 主键冲突异常
+        TOKEN_ENCRYPT = 10009  # token解码异常
 
     class User(IntEnum):
         USER_REPEAT = 20001  # 用户已存在

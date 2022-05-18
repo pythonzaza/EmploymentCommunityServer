@@ -4,7 +4,7 @@ from typing import Union
 from datetime import datetime, timedelta
 
 from configs import EncryptConfig
-from common.err import HTTPException
+from common.err import HTTPException, ErrEnum
 from schema_models.common_models import TokenData
 
 
@@ -50,10 +50,10 @@ class Encrypt(object):
         try:
             user = jwt.decode(token, EncryptConfig.SECRET_KEY, algorithms=[EncryptConfig.ALGORITHM])
             if not isinstance(user, dict):
-                return HTTPException(message="token_data格式异常", status=20000)
+                return HTTPException(message="token_data格式异常", status=ErrEnum.Common.TOKEN_ERR)
             return TokenData(**user)
         except JWTError as err:
-            raise HTTPException(message=f"token解码异常:{err}", status=20001)
+            raise HTTPException(message=f"token解码异常:{err}", status=ErrEnum.Common.TOKEN_ENCRYPT)
 
     @staticmethod
     async def md5(text: str):
