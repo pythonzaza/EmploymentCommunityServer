@@ -11,7 +11,7 @@ async def query_ip(ip: str) -> IpDetailsModel:
     """
     查询IP地址
     :param ip:
-    :return:
+    :return: IpDetailsModel
     """
     if ip[:4] in ["127.", "192.", "10.", "172."]:
         return IpDetailsModel(ip=ip)
