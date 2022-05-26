@@ -157,3 +157,14 @@ class UserServer(BaseServer):
 
         res = await self.db.execute(stmt)
         print(res)
+
+    async def update_password(self, new_password: str):
+        """
+        更新密码
+        """
+        new_password = await Encrypt.encrypt_password(new_password)
+        user_id = self.request.user
+        stmt: Update = update(UserModel).where(UserModel.id == user_id).values(password=new_password)
+        res: CursorResult = await self.db.execute(stmt)
+
+        return True if res.rowcount else False
